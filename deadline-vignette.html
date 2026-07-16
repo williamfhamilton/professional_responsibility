@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Deadline</title>
+<style>
+  :root {
+    --text-primary: #1a1a1a;
+    --text-secondary: #5f5e5a;
+    --text-muted: #888780;
+    --border: #d8d6cf;
+    --surface-1: #f7f6f2;
+    --surface-2: #ffffff;
+    --accent: #185fa5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+    line-height: 1.6;
+  }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 0.25rem; }
+  .subtitle { font-size: 14px; color: var(--text-secondary); margin: 0 0 1.5rem; }
+  .progress { display: flex; gap: 6px; margin-bottom: 1.5rem; }
+  .progress div { flex: 1; height: 4px; border-radius: 2px; background: var(--border); }
+  .progress div.done { background: var(--accent); }
+  .round-card {
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--round-color, var(--accent));
+  }
+  .round-label { font-size: 13px; font-weight: 600; margin: 0 0 6px; color: var(--round-color, var(--accent)); }
+  .round-facts { font-size: 15px; margin: 0 0 12px; }
+  .round-question { font-size: 14px; color: var(--text-secondary); font-style: italic; margin: 0; }
+  textarea {
+    width: 100%;
+    margin-bottom: 1.5rem;
+    padding: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-primary);
+    resize: vertical;
+  }
+  textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  button {
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+  button:hover { background: var(--surface-1); }
+  button:active { transform: scale(0.98); }
+  .debrief {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+  }
+  .debrief p { font-size: 15px; margin: 0 0 8px; }
+  .debrief .sub { font-size: 14px; color: var(--text-secondary); }
+  .fault-line { font-size: 13px; color: var(--text-muted); margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<h1>The Deadline</h1>
+<p class="subtitle">Read each round, write your own answer before moving on, then continue to see the next fact.</p>
+
+<div class="progress" id="progress"></div>
+<div id="rounds"></div>
+
+<div style="display:flex; gap:8px; margin-top:1.25rem;">
+  <button id="nextBtn">Continue to next round</button>
+  <button id="resetBtn" style="display:none;">Start over</button>
+</div>
+
+<script>
+const rounds = [
+  {
+    label: "Round 1",
+    color: "#888780",
+    facts: "You are a junior associate. A partner hands you a motion due in three days on an area of law you've never worked in, say, admiralty jurisdiction. The partner is unavailable this week. You could take the assignment and learn fast, or tell the partner you're not competent to handle it and risk looking difficult in your second month at the firm.",
+    question: "What does competence actually require here? Take the assignment or decline it, and what would either choice cost you?"
+  },
+  {
+    label: "Round 2",
+    color: "#b07a17",
+    facts: "New fact: you start researching and realize the motion turns on a narrow area of maritime lien doctrine that's genuinely obscure. Getting properly up to speed would take more like two weeks than three days.",
+    question: "Has your answer changed? If competence is a threshold you either meet or don't, have you just discovered you don't meet it, or is there still a version of \"fast learning\" that gets you there in time?"
+  },
+  {
+    label: "Round 3",
+    color: "#b5551d",
+    facts: "New fact: the partner mentions, almost as an aside, that this client is a long-time firm relationship and that losing the motion would cost the client real money, though not something catastrophic or case-ending.",
+    question: "Does the stakes of the underlying matter change what competence requires of you here? Should it?"
+  },
+  {
+    label: "Round 4",
+    color: "#a32d2d",
+    facts: "New fact: you call around and find a law school friend at another firm who has real expertise in this exact area. She offers you an hour of her time informally, off the books. Her firm has no conflict on this particular matter, but it does occasionally oppose yours in other cases.",
+    question: "Final answer. Do you take the help? Does it matter that it's informal and off the books rather than a formal consultation? Have you actually solved your competence problem, or just quietly borrowed someone else's competence without telling anyone?"
+  }
+];
+
+let current = 0;
+const answers = ["", "", "", ""];
+
+function renderProgress() {
+  const el = document.getElementById('progress');
+  el.innerHTML = '';
+  rounds.forEach((r, i) => {
+    const dot = document.createElement('div');
+    if (i <= current) dot.className = 'done';
+    el.appendChild(dot);
+  });
+}
+
+function renderRounds() {
+  const container = document.getElementById('rounds');
+  container.innerHTML = '';
+  for (let i = 0; i <= current; i++) {
+    const r = rounds[i];
+    const card = document.createElement('div');
+    card.className = 'round-card';
+    card.style.setProperty('--round-color', r.color);
+    card.innerHTML =
+      '<p class="round-label">' + r.label + '</p>' +
+      '<p class="round-facts">' + r.facts + '</p>' +
+      '<p class="round-question">' + r.question + '</p>';
+    container.appendChild(card);
+
+    const ta = document.createElement('textarea');
+    ta.placeholder = "Write your answer here before moving on...";
+    ta.value = answers[i];
+    ta.rows = 3;
+    ta.addEventListener('input', (e) => { answers[i] = e.target.value; });
+    container.appendChild(ta);
+  }
+
+  if (current === rounds.length - 1) {
+    const debrief = document.createElement('div');
+    debrief.className = 'debrief';
+    debrief.innerHTML =
+      '<p><b>Debrief.</b> Look back at your four answers. Find the point where "I can become competent enough" turned into "I am no longer competent to do this alone." Most people find this fact doesn\'t cleanly resolve, it just relocates: from "do I know this area of law" to "do I know who to call," which is itself a form of competence the rule doesn\'t say much about.</p>' +
+      '<p class="sub">Nothing about the underlying duty of competence changed across the four rounds. What changed was how visible the gap between the rule and the reality of practicing under time pressure became.</p>' +
+      '<p class="fault-line">Fault line: duty of competence versus the economic and institutional pressures of practice.</p>';
+    container.appendChild(debrief);
+  }
+}
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (current < rounds.length - 1) {
+    current++;
+    renderProgress();
+    renderRounds();
+    if (current === rounds.length - 1) {
+      document.getElementById('nextBtn').style.display = 'none';
+      document.getElementById('resetBtn').style.display = 'inline-block';
+    }
+  }
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  current = 0;
+  for (let i = 0; i < answers.length; i++) answers[i] = '';
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  document.getElementById('resetBtn').style.display = 'none';
+  renderProgress();
+  renderRounds();
+});
+
+renderProgress();
+renderRounds();
+</script>
+
+</body>
+</html>

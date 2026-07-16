@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Joint Client</title>
+<style>
+  :root {
+    --text-primary: #1a1a1a;
+    --text-secondary: #5f5e5a;
+    --text-muted: #888780;
+    --border: #d8d6cf;
+    --surface-1: #f7f6f2;
+    --surface-2: #ffffff;
+    --accent: #185fa5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+    line-height: 1.6;
+  }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 0.25rem; }
+  .subtitle { font-size: 14px; color: var(--text-secondary); margin: 0 0 1.5rem; }
+  .progress { display: flex; gap: 6px; margin-bottom: 1.5rem; }
+  .progress div { flex: 1; height: 4px; border-radius: 2px; background: var(--border); }
+  .progress div.done { background: var(--accent); }
+  .round-card {
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--round-color, var(--accent));
+  }
+  .round-label { font-size: 13px; font-weight: 600; margin: 0 0 6px; color: var(--round-color, var(--accent)); }
+  .round-facts { font-size: 15px; margin: 0 0 12px; }
+  .round-question { font-size: 14px; color: var(--text-secondary); font-style: italic; margin: 0; }
+  textarea {
+    width: 100%;
+    margin-bottom: 1.5rem;
+    padding: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-primary);
+    resize: vertical;
+  }
+  textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  button {
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+  button:hover { background: var(--surface-1); }
+  button:active { transform: scale(0.98); }
+  .debrief {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+  }
+  .debrief p { font-size: 15px; margin: 0 0 8px; }
+  .debrief .sub { font-size: 14px; color: var(--text-secondary); }
+  .fault-line { font-size: 13px; color: var(--text-muted); margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<h1>The Joint Client</h1>
+<p class="subtitle">Read each round, write your own answer before moving on, then continue to see the next fact.</p>
+
+<div class="progress" id="progress"></div>
+<div id="rounds"></div>
+
+<div style="display:flex; gap:8px; margin-top:1.25rem;">
+  <button id="nextBtn">Continue to next round</button>
+  <button id="resetBtn" style="display:none;">Start over</button>
+</div>
+
+<script>
+const rounds = [
+  {
+    label: "Round 1",
+    color: "#888780",
+    facts: "Two business partners come to you together to draft an operating agreement for a company they're forming. They tell you at the outset they're \"completely aligned\" and just want the paperwork done efficiently and cheaply.",
+    question: "Do you see anything worth flagging at intake, or is this just an ordinary, low-conflict engagement?"
+  },
+  {
+    label: "Round 2",
+    color: "#b07a17",
+    facts: "New fact: as you draft, you notice one partner is contributing all of the starting capital, while the other is contributing unpaid labor and expertise, \"sweat equity.\" This is one of the single most common sources of later disputes over how much each partner's stake is actually worth.",
+    question: "Does this change your answer? Is this a conflict yet, or just a normal feature of how businesses get built that you're required to draft around neutrally?"
+  },
+  {
+    label: "Round 3",
+    color: "#b5551d",
+    facts: "New fact: six weeks in, one partner calls you privately and asks you to add a provision that favors her interests, in a way the other partner won't know about.",
+    question: "What do you say to her, right now, on this call? What do you say to the other partner, if anything? Can you keep representing either of them going forward?"
+  },
+  {
+    label: "Round 4",
+    color: "#a32d2d",
+    facts: "New fact: when you tell her you can't add anything the other partner doesn't know about, she says, \"If you don't help me with this, I'll just find another lawyer to slip it in after we sign. Wouldn't you rather it be done properly, by someone who actually understands the whole deal?\"",
+    question: "Final answer. Does this change anything? Is she wrong that a worse outcome might follow from your refusal? Does that possibility have any bearing on what you're obligated to do right now?"
+  }
+];
+
+let current = 0;
+const answers = ["", "", "", ""];
+
+function renderProgress() {
+  const el = document.getElementById('progress');
+  el.innerHTML = '';
+  rounds.forEach((r, i) => {
+    const dot = document.createElement('div');
+    if (i <= current) dot.className = 'done';
+    el.appendChild(dot);
+  });
+}
+
+function renderRounds() {
+  const container = document.getElementById('rounds');
+  container.innerHTML = '';
+  for (let i = 0; i <= current; i++) {
+    const r = rounds[i];
+    const card = document.createElement('div');
+    card.className = 'round-card';
+    card.style.setProperty('--round-color', r.color);
+    card.innerHTML =
+      '<p class="round-label">' + r.label + '</p>' +
+      '<p class="round-facts">' + r.facts + '</p>' +
+      '<p class="round-question">' + r.question + '</p>';
+    container.appendChild(card);
+
+    const ta = document.createElement('textarea');
+    ta.placeholder = "Write your answer here before moving on...";
+    ta.value = answers[i];
+    ta.rows = 3;
+    ta.addEventListener('input', (e) => { answers[i] = e.target.value; });
+    container.appendChild(ta);
+  }
+
+  if (current === rounds.length - 1) {
+    const debrief = document.createElement('div');
+    debrief.className = 'debrief';
+    debrief.innerHTML =
+      '<p><b>Debrief.</b> Locate the moment the conflict actually began, not the moment it became visible. Most people place the visible conflict at Round 3, but the structural conflict, one partner contributing capital, the other contributing labor, both needing the same document to fairly value both kinds of contribution, was already present at Round 2, maybe even Round 1.</p>' +
+      '<p class="sub">The call in Round 3 didn\'t create the conflict. It just forced you to notice it.</p>' +
+      '<p class="fault-line">Fault line: conflicts of interest in joint representation.</p>';
+    container.appendChild(debrief);
+  }
+}
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (current < rounds.length - 1) {
+    current++;
+    renderProgress();
+    renderRounds();
+    if (current === rounds.length - 1) {
+      document.getElementById('nextBtn').style.display = 'none';
+      document.getElementById('resetBtn').style.display = 'inline-block';
+    }
+  }
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  current = 0;
+  for (let i = 0; i < answers.length; i++) answers[i] = '';
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  document.getElementById('resetBtn').style.display = 'none';
+  renderProgress();
+  renderRounds();
+});
+
+renderProgress();
+renderRounds();
+</script>
+
+</body>
+</html>
