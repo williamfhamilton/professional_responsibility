@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Confidence: a staged hypothetical</title>
+<style>
+  :root {
+    --text-primary: #1a1a1a;
+    --text-secondary: #5f5e5a;
+    --text-muted: #888780;
+    --border: #d8d6cf;
+    --surface-1: #f7f6f2;
+    --surface-2: #ffffff;
+    --accent: #185fa5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+    line-height: 1.6;
+  }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 0.25rem; }
+  .subtitle { font-size: 14px; color: var(--text-secondary); margin: 0 0 1.5rem; }
+  .progress { display: flex; gap: 6px; margin-bottom: 1.5rem; }
+  .progress div { flex: 1; height: 4px; border-radius: 2px; background: var(--border); }
+  .progress div.done { background: var(--accent); }
+  .round-card {
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--round-color, var(--accent));
+  }
+  .round-label { font-size: 13px; font-weight: 600; margin: 0 0 6px; color: var(--round-color, var(--accent)); }
+  .round-facts { font-size: 15px; margin: 0 0 12px; }
+  .round-question { font-size: 14px; color: var(--text-secondary); font-style: italic; margin: 0; }
+  textarea {
+    width: 100%;
+    margin-bottom: 1.5rem;
+    padding: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-primary);
+    resize: vertical;
+  }
+  textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  button {
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+  button:hover { background: var(--surface-1); }
+  button:active { transform: scale(0.98); }
+  .debrief {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+  }
+  .debrief p { font-size: 15px; margin: 0 0 8px; }
+  .debrief .sub { font-size: 14px; color: var(--text-secondary); }
+  .fault-line { font-size: 13px; color: var(--text-muted); margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<h1>The Confidence</h1>
+<p class="subtitle">Read each round, write your own answer before moving on, then continue to see the next fact.</p>
+
+<div class="progress" id="progress"></div>
+<div id="rounds"></div>
+
+<div style="display:flex; gap:8px; margin-top:1.25rem;">
+  <button id="nextBtn">Continue to next round</button>
+  <button id="resetBtn" style="display:none;">Start over</button>
+</div>
+
+<script>
+const rounds = [
+  {
+    label: "Round 1",
+    color: "#888780",
+    facts: "You represent a client in a custody dispute. During a private meeting to prepare for a hearing, the client mentions, almost in passing, that he keeps a handgun in the house \"for protection.\" Nothing about the gun is relevant to the custody issues being litigated. The client has not threatened anyone.",
+    question: "Do you say anything, to anyone? Does this even register as a professional responsibility question, or is it just background noise from a client's life?"
+  },
+  {
+    label: "Round 2",
+    color: "#b07a17",
+    facts: "New fact: the gun is not in a safe. It's loaded, and it's kept in a kitchen drawer, unlocked, where anyone in the house could reach it in seconds.",
+    question: "Has anything changed? If your answer moved, name exactly which fact moved it: the presence of a gun, or the accessibility of a gun."
+  },
+  {
+    label: "Round 3",
+    color: "#b5551d",
+    facts: "New fact: the client has a teenage son who has friends over at the house when the client is not home.",
+    question: "Has anything changed again? Is this now a different kind of risk than what you were weighing before: not the client's household, but other people's children moving through it unsupervised?"
+  },
+  {
+    label: "Round 4",
+    color: "#a32d2d",
+    facts: "New fact: there is also a 10-year-old living in the house.",
+    question: "Final answer. Do you say anything, to anyone? If yes, to whom, and what do you actually say? If no, what would it take to change your answer, and can you name that threshold in advance rather than discovering it in the moment?"
+  }
+];
+
+let current = 0;
+const answers = ["", "", "", ""];
+
+function renderProgress() {
+  const el = document.getElementById('progress');
+  el.innerHTML = '';
+  rounds.forEach((r, i) => {
+    const dot = document.createElement('div');
+    if (i <= current) dot.className = 'done';
+    el.appendChild(dot);
+  });
+}
+
+function renderRounds() {
+  const container = document.getElementById('rounds');
+  container.innerHTML = '';
+  for (let i = 0; i <= current; i++) {
+    const r = rounds[i];
+    const card = document.createElement('div');
+    card.className = 'round-card';
+    card.style.setProperty('--round-color', r.color);
+    card.innerHTML =
+      '<p class="round-label">' + r.label + '</p>' +
+      '<p class="round-facts">' + r.facts + '</p>' +
+      '<p class="round-question">' + r.question + '</p>';
+    container.appendChild(card);
+
+    const ta = document.createElement('textarea');
+    ta.placeholder = "Write your answer here before moving on...";
+    ta.value = answers[i];
+    ta.rows = 3;
+    ta.addEventListener('input', (e) => { answers[i] = e.target.value; });
+    container.appendChild(ta);
+  }
+
+  if (current === rounds.length - 1) {
+    const debrief = document.createElement('div');
+    debrief.className = 'debrief';
+    debrief.innerHTML =
+      '<p><b>Debrief.</b> Look back at your four answers. Find the exact point where you crossed from "not my business" to "I need to do something." Most people can\'t locate a clean line, or find they\'d have crossed it at a different round than a classmate would.</p>' +
+      '<p class="sub">Nothing about the underlying rule changed between rounds one and four. Only the facts did, and facts arrive exactly this way in practice: gradually, unevenly, never as a fully formed hypothetical.</p>' +
+      '<p class="fault-line">Fault line: confidentiality versus disclosure to prevent harm.</p>';
+    container.appendChild(debrief);
+  }
+}
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (current < rounds.length - 1) {
+    current++;
+    renderProgress();
+    renderRounds();
+    if (current === rounds.length - 1) {
+      document.getElementById('nextBtn').style.display = 'none';
+      document.getElementById('resetBtn').style.display = 'inline-block';
+    }
+  }
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  current = 0;
+  for (let i = 0; i < answers.length; i++) answers[i] = '';
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  document.getElementById('resetBtn').style.display = 'none';
+  renderProgress();
+  renderRounds();
+});
+
+renderProgress();
+renderRounds();
+</script>
+
+</body>
+</html>
