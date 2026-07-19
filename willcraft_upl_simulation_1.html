@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Who Is Practicing Law Here? — UPL Simulation</title>
+<style>
+  :root{
+    --page:#F4F4F5; --card:#FFFFFF; --line:#E7E7E9;
+    --ink:#111827; --body:#27272A; --muted:#6B7280; --faint:#9CA3AF;
+    --blue:#2563EB; --blue-dk:#1D4ED8; --blue-pale:#DBEAFE; --blue-soft:#EFF6FF; --blue-bd:#3B82F6;
+    --gold:#D4A017; --gold-bg:#FEFAE8; --gold-tx:#8A6D0B;
+    --tag:#F1F1F3; --tag-tx:#3F3F46;
+    --excerpt:#F7F8FA;
+    --sound:#15803D; --partial:#B45309; --trap:#B91C1C; --neutral:#52525B;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--page);
+    color:var(--body);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+    padding:40px 18px 64px;
+  }
+  .wrap{max-width:860px;margin:0 auto;}
+  .eyebrow{
+    text-transform:uppercase;letter-spacing:.12em;font-size:12px;font-weight:700;
+    color:var(--faint);text-align:center;margin:0 0 18px;
+  }
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    box-shadow:0 1px 3px rgba(17,24,39,.04),0 10px 30px rgba(17,24,39,.05);
+    padding:40px 44px 36px;
+    animation:fade .35s ease;
+  }
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+  @media (prefers-reduced-motion:reduce){.card{animation:none;}}
+
+  /* header */
+  .head{display:flex;align-items:flex-start;gap:14px;}
+  .badge{
+    flex:none;width:34px;height:34px;border-radius:999px;background:var(--blue-pale);
+    color:var(--blue-dk);font-weight:700;font-size:15px;
+    display:inline-flex;align-items:center;justify-content:center;margin-top:2px;
+  }
+  .htext h2{margin:0;font-size:22px;font-weight:700;color:var(--ink);line-height:1.25;}
+  .htext .sub{margin:3px 0 0;font-size:14px;color:var(--muted);}
+  .tag{
+    display:inline-block;background:var(--tag);color:var(--tag-tx);
+    font-size:13px;padding:4px 12px;border-radius:999px;margin:18px 0 4px;
+  }
+
+  /* body content */
+  .body p{font-size:16px;line-height:1.65;color:var(--body);margin:14px 0;}
+  .body ul{margin:12px 0;padding-left:22px;}
+  .body li{font-size:16px;line-height:1.6;color:var(--body);margin:7px 0;}
+  em{font-style:italic;}
+
+  .excerpt{
+    background:var(--excerpt);border-left:3px solid var(--blue-bd);
+    padding:16px 20px;border-radius:0 8px 8px 0;margin:20px 0;
+    font-style:italic;font-size:15.5px;line-height:1.62;color:#3F3F46;
+  }
+  .discuss{
+    background:var(--gold-bg);border-left:4px solid var(--gold);
+    padding:15px 20px 17px;border-radius:0 8px 8px 0;margin:20px 0;
+  }
+  .discuss .lbl{
+    text-transform:uppercase;letter-spacing:.07em;font-weight:700;font-size:12.5px;
+    color:var(--gold-tx);display:flex;align-items:center;gap:7px;margin-bottom:7px;
+  }
+  .discuss .lbl svg{width:15px;height:15px;flex:none;margin-right:2px;}
+  .discuss p{margin:0;font-size:15.5px;line-height:1.62;color:#3F3F46;}
+
+  /* decision */
+  .qlabel{
+    text-transform:uppercase;letter-spacing:.07em;font-weight:700;font-size:12.5px;
+    color:var(--muted);margin:30px 0 12px;
+  }
+  .choices{display:flex;flex-wrap:wrap;gap:10px;}
+  .choice{
+    appearance:none;background:#fff;border:1px solid #D4D4D8;border-radius:8px;
+    padding:12px 18px;font-size:15px;color:#3F3F46;cursor:pointer;
+    font-family:inherit;line-height:1.35;text-align:center;
+    transition:background .12s,border-color .12s,box-shadow .12s,color .12s;
+  }
+  .choice:hover{border-color:#9CA3AF;background:#FAFAFA;}
+  .choice:focus-visible{outline:2px solid var(--blue);outline-offset:2px;}
+  .choice.sel{
+    border-color:var(--blue);background:var(--blue-soft);color:var(--blue-dk);
+    font-weight:600;box-shadow:inset 0 0 0 1px var(--blue);
+  }
+  @media (max-width:560px){.choice{flex:1 1 100%;}}
+
+  /* consequence */
+  .note{margin-top:18px;border-left:3px solid var(--neutral);padding:2px 0 2px 16px;
+    animation:fade .3s ease;}
+  .note .nlbl{text-transform:uppercase;letter-spacing:.06em;font-weight:700;
+    font-size:11.5px;margin-bottom:5px;}
+  .note p{margin:0;font-size:15px;line-height:1.6;color:#3F3F46;}
+  .note.sound{border-color:var(--sound);} .note.sound .nlbl{color:var(--sound);}
+  .note.partial{border-color:var(--partial);} .note.partial .nlbl{color:var(--partial);}
+  .note.trap{border-color:var(--trap);} .note.trap .nlbl{color:var(--trap);}
+  .note.neutral{border-color:var(--neutral);} .note.neutral .nlbl{color:var(--neutral);}
+
+  /* actions */
+  .next{
+    appearance:none;border:none;background:var(--blue);color:#fff;
+    font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;
+    padding:12px 22px;border-radius:8px;margin-top:26px;
+    display:inline-flex;align-items:center;gap:8px;transition:background .12s,opacity .12s;
+  }
+  .next:hover{background:var(--blue-dk);}
+  .next span{margin-left:1px;}
+  .next:focus-visible{outline:2px solid var(--blue);outline-offset:2px;}
+  .next[disabled]{opacity:.45;cursor:default;}
+
+  .foot{display:flex;justify-content:space-between;align-items:center;
+    margin-top:26px;padding-top:16px;border-top:1px solid var(--line);}
+  .foot .ctr{font-size:13px;color:var(--faint);}
+  .restart{appearance:none;background:none;border:none;color:var(--faint);
+    font-family:inherit;font-size:13px;cursor:pointer;padding:0;text-decoration:underline;
+    text-underline-offset:2px;}
+  .restart:hover{color:var(--muted);}
+
+  /* intro + reveal */
+  .lead-title{font-size:30px;font-weight:800;color:var(--ink);line-height:1.18;margin:0 0 6px;letter-spacing:-.01em;}
+  .premise{font-size:16.5px;line-height:1.68;color:var(--body);margin:16px 0;}
+  .howto{font-size:14px;color:var(--muted);margin:18px 0 0;}
+  .reveal-pt{margin:18px 0;}
+  .reveal-pt h3{margin:0 0 5px;font-size:16.5px;font-weight:700;color:var(--ink);line-height:1.4;}
+  .reveal-pt p{margin:0;font-size:15.5px;line-height:1.62;color:#3F3F46;}
+  .open{background:#FBF1F2;border-left:4px solid var(--trap);padding:16px 20px;border-radius:0 8px 8px 0;margin:22px 0;}
+  .open h3{color:#991B1B;}
+  .path{background:#F7F8FA;border:1px solid var(--line);border-radius:10px;padding:18px 22px;margin:22px 0 6px;}
+  .path h4{margin:0 0 12px;font-size:12.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;}
+  .path ol{margin:0;padding-left:20px;}
+  .path li{font-size:15px;line-height:1.5;color:var(--body);margin:9px 0;}
+  .path li span{color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Professional Responsibility · Module 1</p>
+  <div id="card" class="card"></div>
+</div>
+
+<script>
+/* ---------- content ---------- */
+const STAGES = [
+  {
+    n:1, title:"The storefront", sub:"WillCraft opens its doors", tag:"Public-facing facts",
+    body:`
+      <p>Dana Reyes, who is <strong>not a lawyer</strong>, has opened WillCraft — a storefront and a website. For a flat <strong>$199</strong>, it &ldquo;helps you build your own estate plan using advanced AI.&rdquo; You answer an on-screen interview about your family, your assets, and your wishes; the software produces a will, formats it, and prints it with a state-specific signing-and-witnessing sheet.</p>
+      <ul>
+        <li>Flat $199, no appointment, no lawyer involved at any point</li>
+        <li>On-screen interview &rarr; printed will, trust, and signing instructions</li>
+        <li>A disclaimer on every page</li>
+      </ul>`,
+    excerpt:`<em>Disclaimer, printed on every page:</em> &ldquo;WillCraft is not a law firm and does not provide legal advice. These documents are your own.&rdquo;`,
+    discuss:`Start with the paralegal at your old firm who pulled will clauses from the firm&rsquo;s clause bank — nobody called that UPL. What made it lawful? (A supervising lawyer stood behind every choice and was <em>accountable</em>.) Does anything at WillCraft supply that? A person may write their own will, and a publisher may sell a will-making book — so where is the line between lawful self-help and the practice of law, and which side is WillCraft on so far?`,
+    q:"On these facts alone, is this the unauthorized practice of law?",
+    choices:[
+      {t:"No — it&rsquo;s self-help software", tone:"neutral", lbl:"The common call",
+       note:`The usual first answer. You&rsquo;ve anchored on the <em>artifact</em> — a form, a kit, a book. Hold that thought. Stage&nbsp;2 looks at what the software actually <em>does</em> with your answers.`},
+      {t:"Not yet — depends what it does", tone:"sound", lbl:"Well reserved",
+       note:`The careful move. You&rsquo;ve seen that the verdict turns on whether the tool <em>records</em> your choices or <em>makes</em> them — exactly the question to carry into Stage&nbsp;2.`},
+      {t:"Yes — a non-lawyer selling legal documents", tone:"trap", lbl:"Too broad",
+       note:`Careful — this sweeps too wide. Selling do-it-yourself legal materials to the public is protected self-help; a stationery store&rsquo;s will kit isn&rsquo;t UPL. A fee and a non-lawyer aren&rsquo;t enough on their own.`},
+    ],
+  },
+  {
+    n:2, title:"What the machine actually does", sub:"A closer look at the interview", tag:"On the screen",
+    body:`
+      <p>You look closer. The software doesn&rsquo;t show a menu of templates to pick from. It asks follow-up questions and <strong>decides what your document should contain</strong>. One customer mentions that an adult child &ldquo;has had some trouble with money.&rdquo; Without being asked, the software adds a <strong>spendthrift provision</strong> and a discretionary trust. For a customer with a non-citizen spouse, it restructures the marital bequest. No two outputs are alike.</p>`,
+    excerpt:`<em>On-screen, to a customer who never asked:</em> &ldquo;I&rsquo;ve added a spendthrift trust. This protects the inheritance from creditors and from the beneficiary&rsquo;s own decisions.&rdquo;`,
+    discuss:`A human paralegal who, unprompted, added a spendthrift trust because a client mentioned a struggling child would be practicing law without question. Does the answer change when a <em>model</em> does the same thing? Name the difference between a <em>scrivener</em> (records the choices you dictate) and a <em>selector</em> (decides which provision your situation needs). Which is WillCraft doing when it adds the trust?`,
+    q:"Does how the software works change your call?",
+    choices:[
+      {t:"Still self-help — it&rsquo;s just code", tone:"trap", lbl:"The trap",
+       note:`The &ldquo;it&rsquo;s only software&rdquo; move. But a lawyer wrote the rules that choose the clauses, and the output is individuated legal judgment about <em>this</em> person. Who the author is doesn&rsquo;t change what the act is.`},
+      {t:"Now it&rsquo;s UPL — it&rsquo;s selecting", tone:"sound", lbl:"Sound",
+       note:`The heartland. The moment the tool chose a spendthrift trust the customer never asked for, it <em>selected</em> — and selection on another&rsquo;s behalf is the practice of law. (This is the Parsons Technology / Quicken Family Lawyer problem, with the volume turned up.)`},
+      {t:"Lawful if there&rsquo;s a software safe harbor", tone:"partial", lbl:"Partial",
+       note:`A real argument in some states — but read the fine print. Those safe harbors usually require a conspicuous disclaimer <em>and</em> that the product not hold itself out as a substitute for a lawyer. Remember that condition; it returns in Stage&nbsp;4.`},
+    ],
+  },
+  {
+    n:3, title:"The person at the desk", sub:"Inside the storefront", tag:"Walk-in service",
+    body:`
+      <p>WillCraft&rsquo;s storefront is staffed by <strong>Marco</strong>, a non-lawyer &ldquo;estate consultant.&rdquo; Walk-in customers sit at his desk while he runs the interview with them. When a customer hesitates, Marco explains the questions and tells them what people &ldquo;in your situation usually do.&rdquo;</p>
+      <p>A customer asks, &ldquo;My son and I are estranged — should I cut him out?&rdquo; Marco types it in, reads the software&rsquo;s answer aloud — leave a nominal bequest and add a <em>no-contest clause</em> so the disinheritance is harder to challenge — and adds, &ldquo;Yeah, that&rsquo;s what I&rsquo;d do.&rdquo;</p>`,
+    excerpt:`<em>Still posted on the wall above Marco&rsquo;s desk:</em> &ldquo;WillCraft is not a law firm and does not provide legal advice. These documents are your own.&rdquo;`,
+    discuss:`The software is identical to Stage&nbsp;2 — what changed is the <em>distance</em>. A person alone with a screen applies the law to themselves; a person across a desk from someone interpreting it for their situation is getting a consultation. Has anyone here committed UPL — the software, Marco, or both? And the disclaimer is still on every page: does &ldquo;that&rsquo;s what I&rsquo;d do&rdquo; stop being advice because a sign says it isn&rsquo;t?`,
+    q:"Does the in-store interaction change the analysis?",
+    choices:[
+      {t:"Marco&rsquo;s just running the software", tone:"trap", lbl:"The trap",
+       note:`The courier defense. But a courier who reads you a tailored legal recommendation and says &ldquo;that&rsquo;s what I&rsquo;d do&rdquo; has counseled you — relaying individualized legal advice <em>is</em> the practice. The source doesn&rsquo;t launder it.`},
+      {t:"Marco is independently committing UPL", tone:"sound", lbl:"Sound",
+       note:`Yes — and now two violations are stacked: the software&rsquo;s selection (Stage&nbsp;2) and Marco&rsquo;s own advice. Explaining, recommending, &ldquo;that&rsquo;s what I&rsquo;d do&rdquo; is a non-lawyer giving individualized legal advice, full stop.`},
+      {t:"The disclaimer covers it", tone:"trap", lbl:"The trap",
+       note:`It doesn&rsquo;t — and here you can see why. The inquiry is <em>functional</em>: what was actually done, not what was stamped on it. A customer told by a confident person what to do about their estranged son is <em>relying</em>, banner or no.`},
+    ],
+  },
+  {
+    n:4, title:"The lawyer in the back room", sub:"After the cease-and-desist", tag:"The fix",
+    body:`
+      <p>Threatened with a cease-and-desist, Dana hires <strong>Sam</strong>, a licensed attorney, to &ldquo;review and finalize&rdquo; every document.</p>
+      <ul>
+        <li>Sam is licensed, works remotely, and <strong>never meets or speaks with a customer</strong></li>
+        <li>Sam signs off on about <strong>forty documents a night, flat $40 each</strong>, sight unseen</li>
+        <li>Marco still runs the in-person interviews and still makes recommendations</li>
+        <li>Dana and Sam <strong>split the $199 fee</strong></li>
+      </ul>`,
+    excerpt:`<em>WillCraft&rsquo;s new marketing:</em> &ldquo;Smart, affordable estate planning — the alternative to expensive lawyers. Every document attorney-reviewed.&rdquo;`,
+    discuss:`Three questions students tend to blend — keep them apart. <strong>(1)</strong> Does Sam&rsquo;s review <em>cure</em> the UPL — can after-the-fact review un-practice the judgment Marco already exercised and the customer already relied on? <strong>(2)</strong> Does the <em>arrangement</em> break rules that bind Sam no matter how good the documents are — fee-splitting and partnership with a non-lawyer (5.4), assisting UPL (5.5(a))? <strong>(3)</strong> What does &ldquo;the alternative to expensive lawyers / attorney-reviewed&rdquo; do to the safe-harbor condition from Stage&nbsp;2?`,
+    q:"Does hiring Sam fix the problem?",
+    choices:[
+      {t:"Yes — it&rsquo;s all attorney-reviewed now", tone:"trap", lbl:"The trap",
+       note:`Is forty-a-night, flat-fee, never-meet-the-client review distinguishable from selling a signature? Review can ratify a scrivener&rsquo;s output — it cannot reach back and un-practice law Marco already practiced and the customer already relied on.`},
+      {t:"No — and Sam now violates rules too", tone:"sound", lbl:"Sound",
+       note:`Right — adding Sam <em>added</em> a culpable lawyer. The fee-split violates Rule 5.4(a)&ndash;(b) regardless of document quality; Rule 5.5(a) makes Sam an assister of the UPL; and &ldquo;attorney-reviewed / alternative to lawyers&rdquo; is the holding-out that defeats the safe harbor and turns the disclaimer into a misrepresentation.`},
+      {t:"Only if Sam&rsquo;s review is real", tone:"partial", lbl:"Halfway",
+       note:`Real supervision matters (Rule 5.3 — nominal review isn&rsquo;t supervision). But even <em>perfect</em> review can&rsquo;t fix the fee-split (5.4) or the assisting-UPL problem (5.5(a)). Quality isn&rsquo;t the only question.`},
+    ],
+  },
+  {
+    n:5, title:"What do you do about it?", sub:"Now it&rsquo;s your move", tag:"Your conduct",
+    body:`
+      <p>Now the question turns to you. You are an estate-planning attorney in the same town.</p>
+      <p>A former client mentions, a little sheepishly, that she &ldquo;just did her will at WillCraft for $199 instead of coming to you.&rdquo; Walking past the storefront, you see the marketing — &ldquo;the alternative to expensive lawyers, every document attorney-reviewed&rdquo; — and recognize <strong>Sam&rsquo;s name</strong> as the reviewing attorney. WillCraft&rsquo;s $199 wills are visibly drawing business away from your practice.</p>`,
+    excerpt:`<em>Your former client, on her way out:</em> &ldquo;I hope that was okay — it was so much cheaper, and it asked me everything you would have.&rdquo;`,
+    discuss:`This is the stage intuition gets wrong. Run the reporting analysis <em>twice</em> — once for Dana (non-lawyer) and once for Sam (lawyer). Rule 8.3&rsquo;s mandatory duty runs to <em>lawyers</em> — so is there any duty to report Dana? What about Sam? Where did your most damaging facts come from, and what does Rule&nbsp;1.6 do to what you can say? And notice: you&rsquo;d be reporting a competitor who undercuts your prices. Does that change what you <em>should</em> do, even if it changes nothing about what you <em>may</em> do?`,
+    q:"What do you do?",
+    final:true,
+    choices:[
+      {t:"Report the whole operation", tone:"trap", lbl:"Check this first",
+       note:`Two problems. There&rsquo;s no Rule 8.3 duty to report Dana at all — she&rsquo;s not a lawyer; non-lawyer UPL goes to a UPL committee or prosecutor, and that&rsquo;s <em>permissive</em>. And if your complaint leans on what your former client told you, Rule 1.6 may bar disclosing it. &ldquo;Reporting everything to be safe&rdquo; is not a 1.6 exception.`},
+      {t:"Report Sam, carefully — not Dana", tone:"sound", lbl:"Well reasoned",
+       note:`The most defensible reading. Sam is a lawyer, so Rule 8.3 is potentially in play — assisting UPL and the 5.4 fee-split may raise a substantial question of fitness. But 8.3(c) protects Rule 1.6 information, so build on what you observed publicly (the marketing, the name on the door), not your former client&rsquo;s confidence. Dana&rsquo;s UPL stays permissive.`},
+      {t:"Report Dana&rsquo;s UPL to the committee", tone:"partial", lbl:"Partial",
+       note:`Permitted — reporting non-lawyer UPL is something you <em>may</em> do. But there&rsquo;s no <em>duty</em> compelling it; if your report cites your former client&rsquo;s facts, Rule 1.6 is implicated; and you&rsquo;ve left out Sam — the licensed lawyer, where a mandatory duty might actually attach.`},
+      {t:"Do nothing — no duty, and I&rsquo;m conflicted", tone:"partial", lbl:"Incomplete",
+       note:`Defensible as to Dana — there&rsquo;s genuinely no mandatory duty, and noticing your own competitive motive is exactly right. But don&rsquo;t stop there: Sam is a lawyer, and if you know of conduct raising a substantial question of fitness, Rule 8.3 may <em>require</em> a report regardless of how you feel about the competition.`},
+    ],
+  },
+];
+
+const REVEAL = [
+  {h:"The line was crossed at Stage 2 — not Stage 4.", p:`The UPL didn&rsquo;t begin when Marco sat down or when the marketing went up. It began the moment the software selected a spendthrift trust the customer never asked for. Everything after only deepened it. Anyone who anchored on the form missed the line, because the line was never about the form.`},
+  {h:"Sam made it worse, not better.", p:`The intuitive fix added a culpable lawyer to a non-lawyer violation. Review couldn&rsquo;t un-practice Marco&rsquo;s law; the fee-split independently broke 5.4; and 5.5(a) made Sam an assister of the very UPL the review was meant to cure.`},
+  {h:"The disclaimer never did anything.", p:`&ldquo;Not a law firm, not legal advice&rdquo; rode on every page from Stage 1 and was worth nothing by Stage 3, because the inquiry is functional. Courts read what was done, not what was stamped on it.`},
+  {h:"The reporting answer was asymmetric — and most rooms get it backwards.", p:`There was no duty to report Dana and a possible duty to report Sam — the opposite of the reflex that the non-lawyer&rsquo;s UPL is the reportable wrong. And the most damaging facts came from a former client, so Rule 1.6 limited what you could say at all.`},
+];
+
+const OPEN = {h:"The question this module does not answer.", p:`Strip out Marco. Put the customer alone with a screen again — but a screen fluent enough that they feel counseled, understood, advised. The software still selects. That is <em>maximum distance</em> (no one is there, infinitely scalable, one model for everyone) and <em>maximum individuation</em> (it reasons from your facts) at the same time — and the inherited rule, &ldquo;more distance, less UPL,&rdquo; stamps it <em>safe</em>. Is that consumer protection misfiring, or guild protection finally exposed? We are not going to settle it today.`};
+
+/* ---------- state + render ---------- */
+const card = document.getElementById("card");
+let idx = -1;            // -1 intro, 0..4 stages, 99 reveal
+let picks = [];          // chosen choice text per stage
+let selected = null;     // selected index within current stage (pre-advance)
+
+const bubble = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 11.5a8.38 8.38 0 0 1-8.9 8.4 9 9 0 0 1-4.1-.9L3 20l1.4-4.2A8.38 8.38 0 0 1 3.5 11.5 8.5 8.5 0 0 1 12 3a8.5 8.5 0 0 1 9 8.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+function intro(){
+  card.innerHTML = `
+    <h1 class="lead-title">Who Is Practicing Law Here?</h1>
+    <p class="premise">You&rsquo;re an estate-planning attorney. A new business, <strong>WillCraft</strong>, has opened nearby. You&rsquo;ll learn how it actually works over five stages — and at each one you&rsquo;ll commit to a call <em>before</em> the next fact arrives.</p>
+    <p class="premise">Your verdict won&rsquo;t change what WillCraft is. It will only show you what you were willing to certify before you knew the rest.</p>
+    <p class="howto">Built for small groups — decide together at each stage, then advance.</p>
+    <button class="next" id="go">Begin <span aria-hidden="true">&rarr;</span></button>`;
+  document.getElementById("go").onclick = ()=>{ idx=0; selected=null; render(); window.scrollTo({top:0,behavior:"smooth"}); };
+}
+
+function stage(s){
+  const choiceHTML = s.choices.map((c,i)=>
+    `<button class="choice" data-i="${i}">${c.t}</button>`).join("");
+  card.innerHTML = `
+    <div class="head">
+      <span class="badge">${s.n}</span>
+      <div class="htext"><h2>${s.title}</h2><p class="sub">${s.sub}</p></div>
+    </div>
+    <span class="tag">${s.tag}</span>
+    <div class="body">${s.body}</div>
+    <div class="excerpt">${s.excerpt}</div>
+    <div class="discuss"><div class="lbl">${bubble}Group discussion</div><p>${s.discuss}</p></div>
+    <p class="qlabel">${s.q}</p>
+    <div class="choices">${choiceHTML}</div>
+    <div id="noteSlot"></div>
+    <button class="next" id="adv" disabled>${s.final?"See where this lands":"Next stage"} <span aria-hidden="true">&rarr;</span></button>
+    <div class="foot">
+      <button class="restart" id="rs">Start over</button>
+      <span class="ctr">Stage ${s.n} of 5</span>
+    </div>`;
+
+  const btns = [...card.querySelectorAll(".choice")];
+  const slot = document.getElementById("noteSlot");
+  const adv = document.getElementById("adv");
+
+  btns.forEach(b=>{
+    b.onclick = ()=>{
+      const i = +b.dataset.i;
+      selected = i;
+      btns.forEach(x=>x.classList.remove("sel"));
+      b.classList.add("sel");
+      const c = s.choices[i];
+      slot.innerHTML = `<div class="note ${c.tone}"><div class="nlbl">${c.lbl}</div><p>${c.note}</p></div>`;
+      adv.disabled = false;
+    };
+  });
+
+  adv.onclick = ()=>{
+    if(selected===null) return;
+    picks[idx] = s.choices[selected].t;
+    selected = null;
+    if(s.final){ idx=99; } else { idx++; }
+    render(); window.scrollTo({top:0,behavior:"smooth"});
+  };
+  document.getElementById("rs").onclick = restart;
+}
+
+function reveal(){
+  const pts = REVEAL.map(r=>`<div class="reveal-pt"><h3>${r.h}</h3><p>${r.p}</p></div>`).join("");
+  const pathItems = STAGES.map((s,i)=>
+    `<li><span>Stage ${s.n} — ${s.title}:</span><br>${picks[i]||"&mdash;"}</li>`).join("");
+  card.innerHTML = `
+    <div class="head">
+      <span class="badge" style="background:#FEE2E2;color:#B91C1C;">&#10003;</span>
+      <div class="htext"><h2>The reveal</h2><p class="sub">What the five stages were built to show</p></div>
+    </div>
+    <div class="body" style="margin-top:8px;">${pts}
+      <div class="open reveal-pt"><h3>${OPEN.h}</h3><p>${OPEN.p}</p></div>
+    </div>
+    <div class="path">
+      <h4>The calls your group made</h4>
+      <ol>${pathItems}</ol>
+    </div>
+    <button class="next" id="again">Run it again <span aria-hidden="true">&#8635;</span></button>
+    <div class="foot"><span class="restart" style="cursor:default;text-decoration:none;">Module 1 · Unauthorized practice of law</span><span class="ctr">Complete</span></div>`;
+  document.getElementById("again").onclick = restart;
+}
+
+function restart(){ idx=-1; picks=[]; selected=null; render(); window.scrollTo({top:0,behavior:"smooth"}); }
+
+function render(){
+  if(idx===-1) intro();
+  else if(idx===99) reveal();
+  else stage(STAGES[idx]);
+}
+
+render();
+</script>
+</body>
+</html>
