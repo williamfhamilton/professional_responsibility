@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anatomy of a Bar Discipline Case</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --ink:#20242F;
+    --ink-soft:#4A4E5A;
+    --parchment:#ECE2C6;
+    --parchment-deep:#DCC89A;
+    --tan:#C7A876;
+    --thread:#7A2E2E;
+    --thread-soft:#B98686;
+    --board:#54677E;
+    --board-dim:#C9CFD6;
+    --stamp:#3F5A44;
+    --rule:rgba(32,36,47,0.14);
+    --card-bg:#F7F1E1;
+    --font-display:'Fraunces', serif;
+    --font-body:'Source Serif 4', serif;
+    --font-mono:'IBM Plex Mono', monospace;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--parchment);
+    background-image:
+      radial-gradient(ellipse at top left, rgba(255,255,255,0.35), transparent 55%),
+      repeating-linear-gradient(0deg, rgba(32,36,47,0.02) 0px, rgba(32,36,47,0.02) 1px, transparent 1px, transparent 3px);
+    color:var(--ink);
+    font-family:var(--font-body);
+    line-height:1.55;
+    min-height:100vh;
+  }
+
+  .page{
+    max-width:980px;
+    margin:0 auto;
+    padding:40px 24px 80px;
+  }
+
+  .masthead{
+    border-bottom:2px solid var(--ink);
+    padding-bottom:18px;
+    margin-bottom:22px;
+  }
+  .stamp{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.08em;
+    color:var(--thread);
+    border:1px solid var(--thread);
+    display:inline-block;
+    padding:3px 9px;
+    margin-bottom:14px;
+  }
+  h1{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:clamp(28px, 4vw, 42px);
+    margin:0 0 8px;
+    letter-spacing:-.01em;
+  }
+  .subhead{
+    font-style:italic;
+    color:var(--ink-soft);
+    font-size:16px;
+    max-width:640px;
+    margin:0 0 14px;
+  }
+  .legend{
+    display:flex;
+    gap:22px;
+    flex-wrap:wrap;
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    color:var(--ink-soft);
+  }
+  .legend span{display:inline-flex;align-items:center;gap:7px;}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0;}
+  .dot.thread-on{background:var(--thread);}
+  .dot.board-on{background:var(--board);}
+  .dot.board-off{background:transparent;border:1.5px dashed var(--board-dim);}
+
+  .layout{
+    display:grid;
+    grid-template-columns:250px 1fr;
+    gap:28px;
+    align-items:start;
+  }
+
+  /* Stepper */
+  nav.stepper ol{list-style:none;margin:0;padding:0;position:relative;}
+  nav.stepper li{
+    position:relative;
+    padding:10px 0 10px 34px;
+    cursor:pointer;
+    font-family:var(--font-mono);
+  }
+  nav.stepper li .rail{
+    position:absolute;
+    left:8px; top:0; bottom:0;
+    width:2px;
+  }
+  nav.stepper li:not(:last-child) .rail::after{
+    content:"";
+    position:absolute;
+    left:0; top:22px; bottom:-10px;
+    width:2px;
+    background:var(--thread);
+  }
+  nav.stepper li[data-board="off"]:not(:last-child) .rail::after{background:var(--thread);} /* thread always continues: bar counsel is present at every stage */
+
+  .thread-dot{
+    position:absolute;
+    left:2px; top:12px;
+    width:12px; height:12px;
+    border-radius:50%;
+    background:var(--thread);
+    border:2px solid var(--parchment);
+    z-index:2;
+  }
+  .board-dot{
+    position:absolute;
+    left:20px; top:14px;
+    width:8px; height:8px;
+    border-radius:50%;
+    background:var(--board-dim);
+    border:1.5px dashed var(--board-dim);
+    z-index:2;
+  }
+  nav.stepper li[data-board="on"] .board-dot{
+    background:var(--board);
+    border:1.5px solid var(--board);
+  }
+
+  .stage-num{font-size:11px;color:var(--ink-soft);display:block;}
+  .stage-title{
+    font-family:var(--font-body);
+    font-size:14.5px;
+    font-weight:600;
+    color:var(--ink);
+    display:block;
+    margin-top:2px;
+  }
+  .stage-cite{font-size:11px;color:var(--thread);display:block;margin-top:2px;}
+
+  nav.stepper li.active .stage-title{color:var(--thread);}
+  nav.stepper li:hover .stage-title{text-decoration:underline;}
+  nav.stepper li:focus-visible{outline:2px solid var(--ink); outline-offset:3px; border-radius:3px;}
+
+  /* Case panel */
+  .case-panel{min-height:420px;}
+  .stage-card{
+    background:var(--card-bg);
+    border:1px solid var(--rule);
+    box-shadow:2px 3px 0 rgba(32,36,47,0.08);
+    padding:26px 28px 24px;
+    position:relative;
+  }
+  .stage-card::before{
+    content:"";
+    position:absolute;
+    top:-1px; left:24px; right:24px; height:10px;
+    background:var(--tan);
+    clip-path:polygon(0 0, 100% 0, 92% 100%, 8% 100%);
+  }
+  .kicker{
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--thread);
+    letter-spacing:.06em;
+    margin:0 0 6px;
+  }
+  .stage-card h2{
+    font-family:var(--font-display);
+    font-size:24px;
+    margin:0 0 4px;
+    font-weight:600;
+  }
+  .cite-line{
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin:0 0 16px;
+  }
+  .stage-card p{margin:0 0 12px; font-size:15.5px;}
+  .room-box{
+    background:rgba(122,46,46,0.06);
+    border-left:3px solid var(--thread);
+    padding:10px 14px;
+    margin:14px 0;
+    font-size:14.5px;
+  }
+  .room-box strong{color:var(--thread);}
+  .outcomes{margin:12px 0 4px; padding-left:20px; font-size:14.5px;}
+  .outcomes li{margin-bottom:4px;}
+  .constant-tag{
+    display:inline-block;
+    margin-top:10px;
+    font-family:var(--font-mono);
+    font-size:12px;
+    background:var(--ink);
+    color:var(--parchment);
+    padding:4px 10px;
+  }
+
+  .aside-toggle{
+    margin-top:16px;
+    background:none;
+    border:1px dashed var(--board);
+    color:var(--board);
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    padding:7px 12px;
+    cursor:pointer;
+  }
+  .aside-toggle:hover{background:rgba(84,103,126,0.08);}
+  .aside{
+    margin-top:14px;
+    border:1px dashed var(--board-dim);
+    padding:14px 16px;
+    font-size:14px;
+    color:var(--ink-soft);
+    background:rgba(84,103,126,0.05);
+  }
+  .aside strong{color:var(--board); font-family:var(--font-mono); font-size:12px; display:block; margin-bottom:6px;}
+  .aside[hidden]{display:none;}
+
+  .controls{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:16px;
+    font-family:var(--font-mono);
+    font-size:13px;
+  }
+  .controls button{
+    font-family:var(--font-mono);
+    font-size:13px;
+    background:var(--ink);
+    color:var(--parchment);
+    border:none;
+    padding:9px 16px;
+    cursor:pointer;
+  }
+  .controls button:disabled{opacity:.35; cursor:default;}
+  .controls button:focus-visible{outline:2px solid var(--thread); outline-offset:2px;}
+  #progress{color:var(--ink-soft);}
+
+  .closing{
+    margin-top:36px;
+    border-top:2px solid var(--ink);
+    padding-top:20px;
+  }
+  .closing[hidden]{display:none;}
+  .closing-inner{
+    display:flex;
+    gap:20px;
+    align-items:flex-start;
+  }
+  .final-stamp{
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:18px;
+    color:var(--stamp);
+    border:3px double var(--stamp);
+    padding:10px 14px;
+    transform:rotate(-3deg);
+    flex-shrink:0;
+    white-space:nowrap;
+  }
+  .closing p{margin:0; font-size:15.5px;}
+  .closing strong{color:var(--thread);}
+
+  @media (max-width:720px){
+    .layout{grid-template-columns:1fr;}
+    nav.stepper ol{
+      display:flex;
+      overflow-x:auto;
+      gap:4px;
+      padding-bottom:8px;
+    }
+    nav.stepper li{
+      flex:0 0 auto;
+      padding:10px 14px 10px 30px;
+      border:1px solid var(--rule);
+      background:var(--card-bg);
+    }
+    nav.stepper li:not(:last-child) .rail::after{display:none;}
+    .closing-inner{flex-direction:column;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; animation:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <div class="stamp">CH. 3 · RULES REGULATING THE FLORIDA BAR</div>
+    <h1>Anatomy of a Bar Discipline Case</h1>
+    <p class="subhead">Five stages carry every case from open to close. A sixth exists on paper but almost never convenes. One office is in the room for all of them.</p>
+    <div class="legend">
+      <span><span class="dot thread-on"></span> Bar counsel present this stage</span>
+      <span><span class="dot board-on"></span> Board of Governors active this stage</span>
+      <span><span class="dot board-off"></span> Board of Governors not involved</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="stepper" aria-label="Stages of a Bar discipline case">
+      <ol id="stepperList"></ol>
+    </nav>
+
+    <main class="case-panel">
+      <article class="stage-card" id="stageCard"></article>
+      <div class="controls">
+        <button id="prevBtn" type="button">&larr; Prev</button>
+        <span id="progress"></span>
+        <button id="nextBtn" type="button">Next &rarr;</button>
+      </div>
+    </main>
+  </div>
+
+  <footer class="closing" id="closingNote" hidden>
+    <div class="closing-inner">
+      <div class="final-stamp">FINAL</div>
+      <p>Trace the file start to finish and one office never leaves the room: bar counsel screens the inquiry, builds the grievance committee's case, drafts the formal complaint, and tries it before the referee. The <strong>52-member Board of Governors</strong> touches the file at exactly one point — through a single assigned reviewer who is free to do nothing at all, and usually does. The real check on the Bar's judgment isn't governance. It's adjudication: a referee, and then the Supreme Court itself.</p>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+const stages = [
+  {
+    kicker: "STAGE 1 — INTAKE",
+    title: "Screening &amp; Investigation",
+    cite: "Rule 3-7.3",
+    board: false,
+    body: [
+      "An inquiry comes in. Before anyone else sees it, bar counsel — a lawyer employed by the Bar, not a volunteer, not a judge — decides alone whether it states a violation at all."
+    ],
+    room: "Bar counsel. No committee, no board, no judge sees the file at this point unless bar counsel decides it goes further.",
+    outcomes: [
+      "Dismiss — the file closes without anyone else seeing it.",
+      "Divert to fee arbitration or a practice &amp; professionalism enhancement program.",
+      "Open a disciplinary file and refer it to a grievance committee."
+    ],
+    constant: "Bar counsel's call. Unreviewed."
+  },
+  {
+    kicker: "STAGE 2 — INVESTIGATION",
+    title: "Grievance Committee",
+    cite: "Rule 3-7.4",
+    board: false,
+    body: [
+      "A grievance committee of Bar volunteers (at least a third must be nonlawyers) investigates. The investigation is informal — not bound by the rules of evidence — and the respondent gets notice and a chance to respond before any vote."
+    ],
+    room: "The committee casts the vote (quorum of 3, at least 2 lawyers; a majority of 2 decides) — but bar counsel assembles the evidence, drafts the report, and presents the case to them.",
+    outcomes: [
+      "No probable cause (case ends, possibly with a letter of advice).",
+      "Diversion to a practice-enhancement program.",
+      "Minor misconduct / admonishment.",
+      "Probable cause."
+    ],
+    constant: "Bar counsel builds the record the committee votes on."
+  },
+  {
+    kicker: "STAGE 3 — THE BOARD'S ONE TOUCHPOINT",
+    title: "Designated Reviewer",
+    cite: "Rule 3-7.5(a)",
+    board: true,
+    body: [
+      "This is the entire Board of Governors check for nearly every file — and it belongs to one person.",
+      "Whatever the grievance committee just did, notice goes to a single board member assigned as \"designated reviewer.\" That person has 30 days to request the committee reconsider, or to refer the matter up to the disciplinary review committee.",
+      "If the reviewer does nothing within those 30 days, the committee's action simply becomes final. No vote. No hearing. No record that oversight was even considered."
+    ],
+    room: "One assigned board member. Acting alone. Under no obligation to act.",
+    outcomes: [],
+    constant: "Silence is the default outcome — and silence favors finality.",
+    branchLabel: "See what happens on the rare occasion it's referred up &#9662;",
+    branch: {
+      title: "Disciplinary Review Committee",
+      cite: "Rule 3-7.5(b) — convened only if the designated reviewer escalates",
+      text: "Reviews what the designated reviewer sent up. Can confirm, reject, or amend the recommendation. Its report is final unless the full 52-member Board votes to overrule it — a case-by-case override that almost never happens. And bar counsel is still the one who prepared the file this committee is reading."
+    }
+  },
+  {
+    kicker: "STAGE 4 — ADJUDICATION",
+    title: "Referee Trial",
+    cite: "Rule 3-7.6",
+    board: false,
+    body: [
+      "Once probable cause survives that 30-day window untouched — or is confirmed — the file leaves the Bar's internal machinery and enters something closer to a real trial.",
+      "Bar counsel drafts and files the formal complaint: the same office that screened the inquiry at Stage 1. The Chief Justice appoints a referee — an active or retired judge — who runs a pretrial conference, discovery, and an adversarial hearing."
+    ],
+    room: "Bar counsel prosecutes. The referee (a judge) adjudicates.",
+    outcomes: [
+      "Shortcuts: a guilty plea or consent judgment can end this stage before a full hearing.",
+      "Otherwise: a written report — findings of fact and a recommended sanction."
+    ],
+    constant: "Bar counsel prosecutes the same file it opened."
+  },
+  {
+    kicker: "STAGE 5 — FINAL REVIEW",
+    title: "Supreme Court of Florida",
+    cite: "Rule 3-7.7",
+    board: false,
+    body: [
+      "Review is mandatory whenever the referee recommends probation, public reprimand, suspension, disbarment, or revocation. Lesser outcomes become final if nobody appeals.",
+      "Whoever seeks review carries the burden of showing the referee's report was erroneous, unlawful, or unjustified."
+    ],
+    room: "The Supreme Court — the only body in this entire pipeline that is neither Bar staff nor a Bar volunteer committee.",
+    outcomes: [],
+    constant: "Bar counsel represents the Bar as a party here too, same file, same office, all the way up."
+  }
+];
+
+const stepperList = document.getElementById('stepperList');
+const stageCard = document.getElementById('stageCard');
+const progressEl = document.getElementById('progress');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const closingNote = document.getElementById('closingNote');
+
+let current = 0;
+
+stages.forEach((s, i) => {
+  const li = document.createElement('li');
+  li.dataset.index = i;
+  li.dataset.board = s.board ? "on" : "off";
+  li.tabIndex = 0;
+  li.setAttribute('role', 'button');
+  li.innerHTML = `
+    <span class="rail"></span>
+    <span class="thread-dot"></span>
+    <span class="board-dot"></span>
+    <span class="stage-num">STAGE ${i+1}</span>
+    <span class="stage-title">${s.title}</span>
+    <span class="stage-cite">${s.cite}</span>
+  `;
+  li.addEventListener('click', () => goTo(i));
+  li.addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goTo(i); } });
+  stepperList.appendChild(li);
+});
+
+function render(){
+  const s = stages[current];
+  let html = `
+    <p class="kicker">${s.kicker}</p>
+    <h2>${s.title}</h2>
+    <p class="cite-line">${s.cite}</p>
+  `;
+  s.body.forEach(p => html += `<p>${p}</p>`);
+  html += `<div class="room-box"><strong>Who's actually in the room:</strong> ${s.room}</div>`;
+  if(s.outcomes.length){
+    html += `<ul class="outcomes">` + s.outcomes.map(o => `<li>${o}</li>`).join('') + `</ul>`;
+  }
+  html += `<span class="constant-tag">${s.constant}</span>`;
+  if(s.branch){
+    html += `<button class="aside-toggle" id="branchToggle" type="button">${s.branchLabel}</button>
+             <div class="aside" id="branchAside" hidden>
+               <strong>${s.branch.title} — ${s.branch.cite}</strong>
+               ${s.branch.text}
+             </div>`;
+  }
+  stageCard.innerHTML = html;
+
+  const bt = document.getElementById('branchToggle');
+  if(bt){
+    bt.addEventListener('click', () => {
+      const aside = document.getElementById('branchAside');
+      const isHidden = aside.hasAttribute('hidden');
+      if(isHidden){ aside.removeAttribute('hidden'); bt.innerHTML = "Hide that detour &#9652;"; }
+      else { aside.setAttribute('hidden',''); bt.innerHTML = s.branchLabel; }
+    });
+  }
+
+  [...stepperList.children].forEach((li, i) => li.classList.toggle('active', i === current));
+  progressEl.textContent = `Stage ${current+1} of ${stages.length}`;
+  prevBtn.disabled = current === 0;
+  nextBtn.disabled = current === stages.length - 1;
+  closingNote.hidden = current !== stages.length - 1;
+
+  stageCard.scrollIntoView({ block: 'nearest' });
+}
+
+function goTo(i){
+  current = Math.max(0, Math.min(stages.length - 1, i));
+  render();
+}
+
+prevBtn.addEventListener('click', () => goTo(current - 1));
+nextBtn.addEventListener('click', () => goTo(current + 1));
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowRight') goTo(current + 1);
+  if(e.key === 'ArrowLeft') goTo(current - 1);
+});
+
+render();
+</script>
+</body>
+</html>
