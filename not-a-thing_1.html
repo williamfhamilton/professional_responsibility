@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Not a Thing — 25 Years of the Rules Regulating the Florida Bar</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root{
+    --ink: #12141b;
+    --panel: #1b2030;
+    --panel-line: #333a53;
+    --parchment: #eee7d8;
+    --muted: #8891a8;
+    --gold: #c9a227;
+    --brick: #b4472e;
+    --slate: #6e8ca0;
+    --serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --sans: 'IBM Plex Sans', -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+    --mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0; height:100%; width:100%;
+    background:var(--ink); color:var(--parchment);
+    font-family:var(--sans); overflow:hidden;
+  }
+
+  .stage{
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse at 20% 15%, rgba(201,162,39,0.07), transparent 55%),
+      radial-gradient(ellipse at 85% 90%, rgba(180,71,46,0.06), transparent 55%),
+      repeating-linear-gradient(to bottom, transparent 0 47px, rgba(238,231,216,0.025) 47px 48px),
+      var(--ink);
+  }
+
+  .runner{
+    position:fixed; top:26px; left:36px; z-index:20;
+    font-family:var(--mono); font-size:11px; letter-spacing:.14em;
+    color:var(--muted); text-transform:uppercase;
+    line-height:1.5; pointer-events:none;
+  }
+  .runner b{ color:var(--parchment); font-weight:500; }
+
+  .progress{
+    position:fixed; bottom:28px; left:50%; transform:translateX(-50%);
+    display:flex; gap:8px; z-index:20; pointer-events:none;
+  }
+  .dot{ width:6px; height:6px; border-radius:50%; background:var(--panel-line); transition:background .35s; }
+  .dot.on{ background:var(--gold); }
+
+  .hint{
+    position:fixed; bottom:52px; left:50%; transform:translateX(-50%);
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.12em;
+    color:var(--muted); text-transform:uppercase; z-index:20; pointer-events:none;
+    opacity:.7;
+  }
+
+  .chev{
+    position:fixed; top:50%; transform:translateY(-50%);
+    width:52px; height:52px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(238,231,216,0.04); border:1px solid var(--panel-line);
+    color:var(--muted); cursor:pointer; z-index:25;
+    font-size:18px; transition:opacity .25s, border-color .25s, color .25s;
+    opacity:0;
+  }
+  .stage:hover .chev{ opacity:1; }
+  .chev:hover{ border-color:var(--gold); color:var(--gold); }
+  .chev:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; opacity:1; }
+  .chev.left{ left:28px; }
+  .chev.right{ right:28px; }
+  .chev.disabled{ opacity:0 !important; pointer-events:none; }
+
+  .zone{ position:fixed; top:0; bottom:0; width:50%; z-index:5; cursor:pointer; }
+  .zone.left{ left:0; }
+  .zone.right{ right:0; }
+
+  .slides{ position:relative; height:100%; width:100%; }
+  .slide{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; justify-content:center;
+    padding: 0 clamp(36px, 9vw, 160px);
+    max-width: 1180px; margin: 0 auto;
+    opacity:0; transform:translateY(16px) scale(.99);
+    pointer-events:none;
+    transition: opacity .55s ease, transform .55s ease;
+  }
+  .slide.active{ opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }
+
+  .tag{
+    font-family:var(--mono); font-size:12px; letter-spacing:.22em;
+    text-transform:uppercase; font-weight:500; margin-bottom:18px;
+  }
+  .tag.speech{ color:var(--gold); }
+  .tag.economics{ color:var(--brick); }
+  .tag.competence{ color:var(--slate); }
+
+  h1.headline{
+    font-family:var(--serif); font-weight:600; font-style:normal;
+    font-size:clamp(34px, 5vw, 64px); line-height:1.05; margin:0 0 14px 0;
+    color:var(--parchment); letter-spacing:-0.01em;
+  }
+
+  .cite{
+    font-family:var(--mono); font-size:clamp(12px,1.3vw,14.5px);
+    color:var(--muted); margin:0 0 34px 0; letter-spacing:.02em;
+  }
+
+  .redline{
+    border-left:3px solid var(--gold);
+    padding: 4px 0 4px 22px;
+    margin: 0 0 36px 0;
+    font-family:var(--serif); font-style:italic; font-weight:400;
+    font-size:clamp(17px, 2.05vw, 24px); line-height:1.5;
+    color:var(--parchment); max-width:820px;
+  }
+  .redline.economics{ border-left-color:var(--brick); }
+  .redline.competence{ border-left-color:var(--slate); }
+  .redline del{
+    color:var(--brick); text-decoration:line-through;
+    text-decoration-thickness:2px; text-decoration-color:rgba(180,71,46,.75);
+  }
+  .redline ins{
+    color:var(--gold); text-decoration:underline; font-weight:600; font-style:normal;
+    text-decoration-thickness:2px; text-underline-offset:4px;
+  }
+
+  ul.points{ list-style:none; margin:0; padding:0; max-width:760px; }
+  ul.points li{
+    position:relative; padding-left:26px; margin-bottom:14px;
+    font-size:clamp(14.5px, 1.5vw, 17px); line-height:1.55; color:#d9d3c3;
+  }
+  ul.points li::before{
+    content:"—"; position:absolute; left:0; top:0;
+    color:var(--gold); font-family:var(--mono);
+  }
+  ul.points li b{ color:var(--parchment); font-weight:600; }
+
+  .date{
+    position:absolute; bottom:0; right:0;
+    font-family:var(--mono); font-size:12px; color:var(--muted);
+    letter-spacing:.08em;
+  }
+
+  /* Title slide */
+  #s0 .kicker{ font-family:var(--mono); font-size:12px; letter-spacing:.22em; color:var(--muted); text-transform:uppercase; margin-bottom:22px; }
+  #s0 h1{ font-family:var(--serif); font-weight:600; font-size:clamp(46px,8vw,96px); line-height:.98; margin:0 0 8px 0; }
+  #s0 h2{ font-family:var(--serif); font-weight:300; font-style:italic; font-size:clamp(20px,2.6vw,30px); color:#c7c0ac; margin:0 0 40px 0; }
+  #s0 .legend{
+    font-family:var(--mono); font-size:13px; color:var(--muted); line-height:1.7;
+    border-top:1px solid var(--panel-line); padding-top:22px; max-width:620px;
+  }
+  #s0 .legend .example{ font-family:var(--serif); font-style:italic; font-size:16px; color:var(--parchment); margin-top:8px; }
+  #s0 .begin{
+    margin-top:38px; font-family:var(--mono); font-size:12px; letter-spacing:.14em;
+    color:var(--gold); text-transform:uppercase;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none !important; animation:none !important; }
+  }
+
+  @media (max-width: 640px){
+    .runner{ font-size:9.5px; top:16px; left:20px; }
+    .chev{ display:none; }
+    .redline{ font-size:16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="runner">Professional Responsibility<br><b>Rules Regulating the Florida Bar</b></div>
+
+  <div class="chev left" id="prevBtn" role="button" aria-label="Previous" tabindex="0">&#8592;</div>
+  <div class="chev right" id="nextBtn" role="button" aria-label="Next" tabindex="0">&#8594;</div>
+  <div class="zone left" id="zoneLeft"></div>
+  <div class="zone right" id="zoneRight"></div>
+
+  <div class="progress" id="progress"></div>
+  <div class="hint">click, or press &#8594;, to continue</div>
+
+  <div class="slides">
+
+    <section class="slide active" id="s0">
+      <div class="kicker">Twenty-Five Years</div>
+      <h1>Not a Thing.</h1>
+      <h2>Eight Challenges and Bar Struggles.</h2>
+      <div class="legend">
+        Additions underlined. Deletions struck through — the same convention the
+        Florida Supreme Court uses when it amends a rule.
+        <div class="example">a lawyer <del>may not</del> <ins>may</ins> advertise on the internet</div>
+      </div>
+      <div class="begin">click, or press &#8594;, to begin</div>
+    </section>
+
+    <section class="slide" id="s1">
+      <div class="tag speech">Speech</div>
+      <h1 class="headline">The Advertising Wars</h1>
+      <div class="cite">Subch. 4-7, rewritten eff. 5/1/2013 &nbsp;·&nbsp; Fla. Bar v. Went For It, 515 U.S. 618 (1995)</div>
+      <div class="redline">The Bar's own rules go from <del>protecting the public against advertising</del> to <ins>protecting lawyers' ability to compete</ins>.</div>
+      <ul class="points">
+        <li><b>1989–90</b> — the Bar studies advertising's effects for two years, then bans direct-mail solicitation of accident victims for 30 days.</li>
+        <li><b>1995</b> — the U.S. Supreme Court upholds the ban, calling lawyer ads "commercial speech" entitled to only limited protection.</li>
+        <li><b>2013</b> — the Bar rewrites Subchapter 4-7 almost entirely, loosening restrictions it had defended less than two decades earlier. Justice Pariente dissents.</li>
+      </ul>
+      <div class="date">1990&#8202;–&#8202;2013</div>
+    </section>
+
+    <section class="slide" id="s2">
+      <div class="tag speech">Speech</div>
+      <h1 class="headline">The Website Problem</h1>
+      <div class="cite">Rule 4-7.6 &nbsp;&#8594;&nbsp; Rule 4-7.20(g)</div>
+      <div class="redline">A law firm website is <del>advertising, filed and reviewed for a fee</del> <ins>information a client sought out, exempt from filing</ins>.</div>
+      <ul class="points">
+        <li>For years, nobody agreed whether a firm's own website counted as "advertising" subject to filing and a review fee.</li>
+        <li>The fix: websites are substantively regulated, but exempt from the filing requirement, because a website is sought out, not sent.</li>
+        <li>A doctrine built for print and broadcast had to invent a new category just to survive contact with the internet.</li>
+      </ul>
+      <div class="date">2008&#8202;–&#8202;2013</div>
+    </section>
+
+    <section class="slide" id="s3">
+      <div class="tag speech">Speech</div>
+      <h1 class="headline">Lawyers on Social Media</h1>
+      <div class="cite">Guidelines for Networking Sites &nbsp;·&nbsp; Standing Comm. on Advertising, rev. 2020</div>
+      <div class="redline">A lawyer's LinkedIn page is <del>one thing</del> <ins>three things at once — a website, a set of testimonials, and, if boosted, a paid ad</ins>.</div>
+      <ul class="points">
+        <li>A lawyer's own page, if used to promote the practice, is treated like a website: <b>exempt from filing</b>, but still bound by the substantive advertising rules.</li>
+        <li>A client's "recommendation" on the page counts as a <b>testimonial</b> — the same restricted category as a client quote in a print ad.</li>
+        <li>A paid, "boosted" post is treated differently again: like a <b>traditional ad</b>, it has to be filed for review before it runs.</li>
+      </ul>
+      <div class="date">ongoing</div>
+    </section>
+
+    <section class="slide" id="s4">
+      <div class="tag speech">Speech</div>
+      <h1 class="headline">The Text Message</h1>
+      <div class="cite">Subch. 4-7 &nbsp;·&nbsp; direct-contact solicitation rules</div>
+      <div class="redline">A text to an accident victim is <del>unthinkable</del> <ins>permitted, if it opens with the word "Advertisement"</ins>.</div>
+      <ul class="points">
+        <li>The 1990, mail-based, 30-day rule now has to govern a medium invented decades later.</li>
+        <li>A qualifying text must open with "Advertisement," disclose how the lawyer got the number, and tell the recipient to disregard it if already represented.</li>
+        <li>The channel changed. The disclosure architecture built for paper did not.</li>
+      </ul>
+      <div class="date">2010s</div>
+    </section>
+
+    <section class="slide" id="s5">
+      <div class="tag economics">Economics</div>
+      <h1 class="headline">Who Owns the Firm?</h1>
+      <div class="cite">Rule 4-5.4, amended 2022</div>
+      <div class="redline economics">A nonlawyer's equity stake in a firm is <del>worth a pilot program</del> <ins>rejected, 46 to 0</ins>.</div>
+      <ul class="points">
+        <li><b>2021</b> — the Bar's own special committee recommends a Utah-style sandbox letting nonlawyers hold minority equity in firms.</li>
+        <li>The Board of Governors rejects it unanimously — 46-0 on ownership, 45-0 on fee-splitting with nonlawyers. The Court agrees.</li>
+        <li>Arizona and Utah move the opposite direction in the same years. Same economic pressure, opposite answer.</li>
+      </ul>
+      <div class="date">2021&#8202;–&#8202;2022</div>
+    </section>
+
+    <section class="slide" id="s6">
+      <div class="tag economics">Economics</div>
+      <h1 class="headline">The App That Practiced Law</h1>
+      <div class="cite">Fla. Bar v. TIKD Services, LLC, 326 So. 3d 1073 (Fla. 2021)</div>
+      <div class="redline economics">Matching a driver to a lawyer for a flat fee is <del>a business proposition</del> <ins>the unauthorized practice of law — 4 to 3</ins>.</div>
+      <ul class="points">
+        <li>Upload a ticket, pay a flat fee, get matched with a lawyer, get refunded if you lose. The Bar's own referee found no violation.</li>
+        <li>The Florida Supreme Court reverses, 4-3.</li>
+        <li>Justice Couriel, dissenting: TIKD offered "not legal services, but a business proposition."</li>
+      </ul>
+      <div class="date">2021</div>
+    </section>
+
+    <section class="slide" id="s7">
+      <div class="tag competence">Competence</div>
+      <h1 class="headline">Know Your Tools</h1>
+      <div class="cite">Rule 4-1.1, cmt. &nbsp;·&nbsp; Rule 6-10.3</div>
+      <div class="redline competence">Technological competence is <del>optional, a matter of personal style</del> <ins>mandatory — three hours, every three years</ins>.</div>
+      <ul class="points">
+        <li><b>2016</b> — the comment to the competence rule is amended: competence now includes understanding technology's risks and benefits.</li>
+        <li>The same year, Florida becomes the first mandatory bar in the country to require CLE hours specifically in technology.</li>
+        <li>The pressure came from e-discovery and cloud storage — not from anything resembling AI.</li>
+      </ul>
+      <div class="date">2016</div>
+    </section>
+
+    <section class="slide" id="s8">
+      <div class="tag competence">Competence</div>
+      <h1 class="headline">Learning Machines, Learning Rules</h1>
+      <div class="cite">Eth. Op. 24-1 (Jan. 19, 2024) &nbsp;&#8594;&nbsp; SC2024-0032 (eff. Oct. 28, 2024)</div>
+      <div class="redline competence">A lawyer's duty to review AI output is <del>unwritten</del> <ins>the same duty owed to a paralegal</ins>.</div>
+      <ul class="points">
+        <li><b>January 2024</b> — an advisory opinion, unanimously approved, says lawyers may use generative AI if they protect confidentiality and verify the output.</li>
+        <li>By <b>October 2024</b>, the advisory becomes binding rule.</li>
+        <li>The fix borrows old doctrine for a new tool: a lawyer's oversight of AI is modeled on the decades-old duty to supervise a paralegal.</li>
+      </ul>
+      <div class="date">2024</div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length; // includes title slide at index 0
+  let current = 0;
+
+  const progress = document.getElementById('progress');
+  // dots represent the 8 content slides (indices 1..8)
+  for (let i = 1; i < total; i++){
+    const d = document.createElement('div');
+    d.className = 'dot';
+    d.dataset.index = i;
+    progress.appendChild(d);
+  }
+  const dots = Array.from(progress.children);
+
+  function render(){
+    slides.forEach((s, i) => s.classList.toggle('active', i === current));
+    dots.forEach((d, i) => d.classList.toggle('on', (i + 1) === current));
+    document.getElementById('prevBtn').classList.toggle('disabled', current === 0);
+    document.getElementById('nextBtn').classList.toggle('disabled', current === total - 1);
+  }
+
+  function go(delta){
+    const next = current + delta;
+    if (next < 0 || next > total - 1) return;
+    current = next;
+    render();
+  }
+
+  document.getElementById('nextBtn').addEventListener('click', () => go(1));
+  document.getElementById('prevBtn').addEventListener('click', () => go(-1));
+  document.getElementById('zoneRight').addEventListener('click', () => go(1));
+  document.getElementById('zoneLeft').addEventListener('click', () => go(-1));
+
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowRight','PageDown',' '].includes(e.key)){ e.preventDefault(); go(1); }
+    if (['ArrowLeft','PageUp','Backspace'].includes(e.key)){ e.preventDefault(); go(-1); }
+    if (e.key === 'Home'){ current = 0; render(); }
+    if (e.key === 'End'){ current = total - 1; render(); }
+  });
+
+  // basic swipe support
+  let touchX = null;
+  window.addEventListener('touchstart', e => touchX = e.touches[0].clientX);
+  window.addEventListener('touchend', e => {
+    if (touchX === null) return;
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+    touchX = null;
+  });
+
+  render();
+</script>
+
+</body>
+</html>
