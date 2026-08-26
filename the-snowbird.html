@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Snowbird</title>
+<style>
+  :root {
+    --text-primary: #1a1a1a;
+    --text-secondary: #5f5e5a;
+    --text-muted: #888780;
+    --border: #d8d6cf;
+    --surface-1: #f7f6f2;
+    --surface-2: #ffffff;
+    --accent: #185fa5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+    line-height: 1.6;
+  }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 0.25rem; }
+  .subtitle { font-size: 14px; color: var(--text-secondary); margin: 0 0 1.5rem; }
+  .progress { display: flex; gap: 6px; margin-bottom: 1.5rem; }
+  .progress div { flex: 1; height: 4px; border-radius: 2px; background: var(--border); }
+  .progress div.done { background: var(--accent); }
+  .round-card {
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--round-color, var(--accent));
+  }
+  .round-label { font-size: 13px; font-weight: 600; margin: 0 0 6px; color: var(--round-color, var(--accent)); }
+  .round-facts { font-size: 15px; margin: 0 0 12px; }
+  .round-question { font-size: 14px; color: var(--text-secondary); font-style: italic; margin: 0; }
+  textarea {
+    width: 100%;
+    margin-bottom: 1.5rem;
+    padding: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-primary);
+    resize: vertical;
+  }
+  textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  button {
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+  button:hover { background: var(--surface-1); }
+  button:active { transform: scale(0.98); }
+  .debrief {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+  }
+  .debrief p { font-size: 15px; margin: 0 0 8px; }
+  .debrief .sub { font-size: 14px; color: var(--text-secondary); }
+  .fault-line { font-size: 13px; color: var(--text-muted); margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<h1>The Snowbird</h1>
+<p class="subtitle">Read each round, write your own answer before moving on, then continue to see the next fact.</p>
+
+<div class="progress" id="progress"></div>
+<div id="rounds"></div>
+
+<div style="display:flex; gap:8px; margin-top:1.25rem;">
+  <button id="nextBtn">Continue to next round</button>
+  <button id="resetBtn" style="display:none;">Start over</button>
+</div>
+
+<script>
+const rounds = [
+  {
+    label: "Round 1",
+    color: "#888780",
+    facts: "You're licensed only in Ohio. For twelve years you've handled contracts and employment matters for a mid-size Ohio manufacturer — one of your firm's oldest clients. The client opens a small distribution facility in Florida and needs its supply contract with a Florida vendor negotiated in person. You fly down, spend three days negotiating and signing the deal at the client's Florida office, and fly home.",
+    question: "Model Rule 5.5(c)(4) lets an out-of-state lawyer provide services here that \"arise out of or are reasonably related to\" the lawyer's home-jurisdiction practice, on a temporary basis. Does this trip qualify? What in these facts is actually doing the work — the client relationship, the subject matter, or something else?"
+  },
+  {
+    label: "Round 2",
+    color: "#b07a17",
+    facts: "New fact: the Florida facility grows. Over the next eighteen months the client asks you back — sometimes quarterly, sometimes monthly — to negotiate a warehouse lease with a Florida landlord, hire plant staff, and sort out overtime questions under Florida wage law that only come up because the plant is there. Each trip is short, three or four days. But you've now made the trip eleven times, and some of what you're advising on isn't anything you ever practiced in Ohio.",
+    question: "Is this still \"temporary\"? Does that word describe each individual trip, or the arrangement as a whole — and does it matter that the subject matter has started to drift from what you actually practice at home?"
+  },
+  {
+    label: "Round 3",
+    color: "#c1440e",
+    facts: "New fact: the client's general counsel calls. \"You already know the plant and the people — can you just be our Florida employment person going forward?\" From here on, the questions aren't Ohio-law questions that happen to touch Florida; they're freestanding Florida statutory questions, the kind a Florida employment lawyer would answer. Your argument to yourself: the relationship arose out of your Ohio-based representation of this client, and the rule protects work that \"arises out of\" your practice — so this still counts.",
+    question: "Does \"arising out of your practice\" mean arising out of your relationship with this client, or arising out of the body of law you actually practice? If those two things point in different directions, which one does Model Rule 5.5(c)(4) care about?"
+  },
+  {
+    label: "Round 4",
+    color: "#a32d2d",
+    facts: "New fact: the client is opening a second Florida facility and wants you on-site for weeks at a stretch during the buildout. They offer you a desk at the plant \"for convenience,\" and list your cell number in the internal plant directory under \"Employment Law — Florida.\" You've never sat for the Florida bar and don't plan to; you still bill everything through your Ohio firm.",
+    question: "Final answer. Has this become \"an office or other systematic and continuous presence\" under Model Rule 5.5(b) — the thing (c)(4) was never meant to authorize? If so, which round was the one where that actually happened, and how would you have known it at the time?"
+  }
+];
+
+let current = 0;
+const answers = ["", "", "", ""];
+
+function renderProgress() {
+  const el = document.getElementById('progress');
+  el.innerHTML = '';
+  rounds.forEach((r, i) => {
+    const dot = document.createElement('div');
+    if (i <= current) dot.className = 'done';
+    el.appendChild(dot);
+  });
+}
+
+function renderRounds() {
+  const container = document.getElementById('rounds');
+  container.innerHTML = '';
+  for (let i = 0; i <= current; i++) {
+    const r = rounds[i];
+    const card = document.createElement('div');
+    card.className = 'round-card';
+    card.style.setProperty('--round-color', r.color);
+    card.innerHTML =
+      '<p class="round-label">' + r.label + '</p>' +
+      '<p class="round-facts">' + r.facts + '</p>' +
+      '<p class="round-question">' + r.question + '</p>';
+    container.appendChild(card);
+
+    const ta = document.createElement('textarea');
+    ta.placeholder = "Write your answer here before moving on...";
+    ta.value = answers[i];
+    ta.rows = 3;
+    ta.addEventListener('input', (e) => { answers[i] = e.target.value; });
+    container.appendChild(ta);
+  }
+
+  if (current === rounds.length - 1) {
+    const debrief = document.createElement('div');
+    debrief.className = 'debrief';
+    debrief.innerHTML =
+      '<p><b>Debrief.</b> Look back at your four answers. Find the round where "temporary" or "reasonably related" first felt like it was doing more work than it could bear — then ask whether the rule text actually changed between that round and Round 1, or whether what changed was how comfortable you\'d gotten with the relationship.</p>' +
+      '<p class="sub">Model Rule 5.5(c)(4) has no built-in metric for any of this. Comment 14 offers factors rather than a test: whether the client was previously represented by the lawyer or is resident in the lawyer\'s home state, whether the matter has a significant connection to that state, and whether significant aspects of the work or the governing law implicate it. Round 1 satisfies several of those factors at once — prior representation, home-state client, work that grew directly out of an existing engagement. By Round 3, none of them point the same direction anymore: the client relationship is still there, but the "significant aspects of the work" and "the governing law" are now entirely local to Florida. The rule asks you to weigh factors that have quietly come apart from each other, and doesn\'t tell you which one controls when they do.</p>' +
+      '<p class="sub">Bar authorities that have actually drawn this line have gone different directions on facts like these. One lawyer lost when he tried to justify representing his own in-laws as "reasonably related" to his home-state practice — the deciding court found none of the usual connections actually present. A separate ethics opinion reached a similar result from the other side: a demand letter on an all-in-state dispute, for an in-state client, wasn\'t saved by the lawyer\'s out-of-state license just because the client had once been represented there. Neither authority gives you a day count, a trip count, or a dollar figure. That\'s not an oversight — the rule was written to track the substance of the connection, not its frequency, and substance is exactly the kind of thing that has to be judged case by case.</p>' +
+      '<p class="fault-line">Fault line: multijurisdictional practice under Model Rule 5.5(c)(4) — the point at which an ongoing client relationship stops carrying a lawyer\'s home-jurisdiction competence with it, and starts becoming a second, unlicensed practice of its own.</p>';
+    container.appendChild(debrief);
+  }
+}
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (current < rounds.length - 1) {
+    current++;
+    renderProgress();
+    renderRounds();
+    if (current === rounds.length - 1) {
+      document.getElementById('nextBtn').style.display = 'none';
+      document.getElementById('resetBtn').style.display = 'inline-block';
+    }
+  }
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  current = 0;
+  for (let i = 0; i < answers.length; i++) answers[i] = '';
+  document.getElementById('nextBtn').style.display = 'inline-block';
+  document.getElementById('resetBtn').style.display = 'none';
+  renderProgress();
+  renderRounds();
+});
+
+renderProgress();
+renderRounds();
+</script>
+
+</body>
+</html>
