@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Floor — A Competence Vignette</title>
+<style>
+  :root{
+    --paper: #F6F3EC;
+    --paper-dim: #EFEADD;
+    --ink: #201E1B;
+    --ink-soft: #5B564C;
+    --ink-faint: #948C7C;
+    --rule: #D9D2C0;
+    --accent: #7A3B32;
+    --accent-wash: #F0E1DA;
+    --focus: #2E5C6E;
+    --serif: Iowan Old Style, Palatino Linotype, Palatino, Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--serif);
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .page{
+    max-width:640px;
+    margin:0 auto;
+    padding:64px 24px 120px;
+  }
+
+  header.masthead{
+    margin-bottom:56px;
+  }
+
+  .kicker{
+    font-family:var(--sans);
+    font-size:13px;
+    color:var(--ink-soft);
+    margin:0 0 10px;
+  }
+
+  h1{
+    font-family:var(--serif);
+    font-size:44px;
+    line-height:1.05;
+    margin:0 0 12px;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+
+  .dek{
+    font-family:var(--serif);
+    font-style:italic;
+    color:var(--ink-soft);
+    font-size:19px;
+    margin:0 0 28px;
+    max-width:56ch;
+  }
+
+  .intro p{
+    font-size:17px;
+    max-width:62ch;
+    color:var(--ink);
+  }
+
+  .progress{
+    font-family:var(--sans);
+    font-size:12px;
+    color:var(--ink-faint);
+    margin-top:24px;
+  }
+
+  .round{
+    display:none;
+    padding-top:48px;
+    margin-top:48px;
+    border-top:1px solid var(--rule);
+  }
+
+  .round.revealed{
+    display:block;
+    animation: fadeIn 0.5s ease;
+  }
+
+  @keyframes fadeIn{
+    from{ opacity:0; transform:translateY(6px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  .round-head{
+    display:flex;
+    align-items:baseline;
+    gap:18px;
+    margin-bottom:22px;
+  }
+
+  .round-num{
+    font-family:var(--serif);
+    font-size:40px;
+    color:var(--accent);
+    line-height:1;
+    font-weight:600;
+  }
+
+  .round-title{
+    font-family:var(--serif);
+    font-size:22px;
+    font-weight:600;
+    color:var(--ink);
+  }
+
+  .facts p{
+    font-size:17px;
+    max-width:62ch;
+  }
+
+  .facts p + p{ margin-top:16px; }
+
+  fieldset{
+    border:none;
+    margin:28px 0 0;
+    padding:0;
+  }
+
+  legend{
+    font-family:var(--sans);
+    font-size:15px;
+    font-weight:600;
+    color:var(--ink);
+    padding:0 0 12px;
+    max-width:60ch;
+  }
+
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .option{
+    position:relative;
+  }
+
+  .option input{
+    position:absolute;
+    opacity:0;
+    width:1px;
+    height:1px;
+  }
+
+  .option label{
+    display:block;
+    font-family:var(--sans);
+    font-size:15px;
+    color:var(--ink);
+    background:var(--paper-dim);
+    border:1px solid var(--rule);
+    border-radius:3px;
+    padding:13px 16px;
+    cursor:pointer;
+    transition:border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .option input:focus-visible + label{
+    outline:2px solid var(--focus);
+    outline-offset:2px;
+  }
+
+  .option label:hover{
+    border-color:var(--ink-faint);
+  }
+
+  .option input:checked + label{
+    background:var(--accent-wash);
+    border-color:var(--accent);
+  }
+
+  .option input:disabled + label{
+    cursor:default;
+  }
+
+  .option input:disabled:not(:checked) + label{
+    opacity:0.45;
+  }
+
+  .option input:disabled:checked + label{
+    background:var(--accent-wash);
+    border-color:var(--accent);
+  }
+
+  .option input:disabled:checked + label::after{
+    content:"— your answer";
+    font-style:italic;
+    color:var(--accent);
+    margin-left:8px;
+    font-size:13px;
+  }
+
+  .commit-row{
+    margin-top:22px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+
+  button.commit{
+    font-family:var(--sans);
+    font-size:14px;
+    font-weight:600;
+    color:var(--paper);
+    background:var(--accent);
+    border:none;
+    border-radius:3px;
+    padding:11px 22px;
+    cursor:pointer;
+    transition:opacity 0.15s ease, transform 0.1s ease;
+  }
+
+  button.commit:disabled{
+    background:var(--ink-faint);
+    cursor:not-allowed;
+  }
+
+  button.commit:not(:disabled):hover{
+    transform:translateY(-1px);
+  }
+
+  button.commit:focus-visible{
+    outline:2px solid var(--focus);
+    outline-offset:2px;
+  }
+
+  .committed-tag{
+    font-family:var(--sans);
+    font-size:13px;
+    color:var(--ink-soft);
+    display:none;
+  }
+
+  .transition{
+    margin-top:26px;
+    padding:16px 18px;
+    background:var(--paper-dim);
+    border-left:3px solid var(--accent);
+    display:none;
+  }
+
+  .transition.shown{ display:block; animation: fadeIn 0.5s ease; }
+
+  .transition p{
+    margin:0;
+    font-size:16px;
+    color:var(--ink);
+    max-width:58ch;
+  }
+
+  .debrief h3{
+    font-family:var(--serif);
+    font-size:19px;
+    margin:26px 0 10px;
+  }
+
+  .debrief p{
+    font-size:16.5px;
+    max-width:62ch;
+  }
+
+  .debrief p + p{ margin-top:14px; }
+
+  cite{
+    font-style:normal;
+    font-family:var(--sans);
+    font-size:14.5px;
+    color:var(--ink-soft);
+  }
+
+  .closing{
+    margin-top:36px;
+    padding-top:28px;
+    border-top:1px solid var(--rule);
+  }
+
+  .closing p.question{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:19px;
+    color:var(--ink);
+    max-width:58ch;
+  }
+
+  details.instructor{
+    margin-top:56px;
+    font-family:var(--sans);
+    font-size:14px;
+    color:var(--ink-soft);
+  }
+
+  details.instructor summary{
+    cursor:pointer;
+    font-weight:600;
+    color:var(--ink);
+    padding:8px 0;
+  }
+
+  details.instructor .body{
+    padding:8px 0 4px;
+    max-width:62ch;
+  }
+
+  details.instructor .body p + p{ margin-top:10px; }
+
+  @media (prefers-reduced-motion: reduce){
+    .round.revealed, .transition.shown{ animation:none; }
+  }
+
+  @media (max-width:480px){
+    h1{ font-size:34px; }
+    .round-num{ font-size:32px; }
+    .page{ padding:40px 18px 100px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <p class="kicker">Professional Responsibility — Competence</p>
+    <h1>The Floor</h1>
+    <p class="dek">Rule 1.1 asks for the skill "reasonably necessary." It never asks for good.</p>
+    <div class="intro">
+      <p>You'll work through four rounds. Commit an answer before each round advances — there's no reward for guessing right, because there isn't a right answer waiting at the end. The point is to notice where your own reasoning holds up, and where it doesn't.</p>
+    </div>
+    <p class="progress" id="progressText">Round 1 of 4</p>
+  </header>
+
+  <!-- ROUND 1 -->
+  <section class="round revealed" id="round-1" data-round="1">
+    <div class="round-head">
+      <span class="round-num">1</span>
+      <span class="round-title">The easy case</span>
+    </div>
+    <div class="facts">
+      <p>Dana has been licensed for two years and keeps a general practice — some landlord-tenant work, a few contested guardianships, whatever walks in the door. A client, Mr. Okafor, comes in wanting "a simple will." Dana has never drafted a will before. She finds a fill-in-the-blank template online, types in his name and his two children's names, and has him sign it at the end of the meeting.</p>
+      <p>Nobody else is in the room. Dana doesn't know that Florida requires a will to be signed in the presence of two witnesses, who then sign in the presence of the testator and each other. Without them, the document Mr. Okafor just paid $150 for isn't a valid will at all.</p>
+    </div>
+
+    <form id="form-1">
+      <fieldset>
+        <legend>Has Dana violated Rule 1.1?</legend>
+        <div class="options">
+          <div class="option">
+            <input type="radio" name="r1" id="r1-a" value="a">
+            <label for="r1-a">Clearly yes — this fails even the minimum</label>
+          </div>
+          <div class="option">
+            <input type="radio" name="r1" id="r1-b" value="b">
+            <label for="r1-b">Genuinely unclear</label>
+          </div>
+          <div class="option">
+            <input type="radio" name="r1" id="r1-c" value="c">
+            <label for="r1-c">No — he got a document and wasn't overcharged</label>
+          </div>
+        </div>
+      </fieldset>
+      <div class="commit-row">
+        <button type="submit" class="commit" disabled>Commit</button>
+        <span class="committed-tag">Committed</span>
+      </div>
+    </form>
+
+    <div class="transition" id="transition-1">
+      <p>Most people land here fast, and the speed is the point: almost no one hesitates to call this a violation. Hold onto your reasoning — it's about to get harder to apply.</p>
+    </div>
+  </section>
+
+  <!-- ROUND 2 -->
+  <section class="round" id="round-2" data-round="2">
+    <div class="round-head">
+      <span class="round-num">2</span>
+      <span class="round-title">Same rule, sharper facts</span>
+    </div>
+    <div class="facts">
+      <p>Marcus has been drafting wills for eleven years — roughly forty of them, always the same basic structure: everything to the surviving spouse, or split equally among the children if there isn't one. He knows Florida's execution formalities cold. Two witnesses, notary, self-proving affidavit, every time, no errors, ever.</p>
+      <p>A new client, Ms. Vance, comes in. She owns a small manufacturing business worth about two million dollars. She has three adult children: one who has worked in the business for a decade and wants to run it, one who has been estranged from the family for years and has a documented substance use disorder, and one who lives out of state with no interest in the business at all. She tells Marcus: "I just want something simple. Split everything three ways evenly. I don't want to spend a lot on this."</p>
+      <p>Marcus doesn't raise a spendthrift trust for the estranged child. He doesn't raise a buy-sell agreement or any succession mechanism for the child running the business. He doesn't walk her through what an even three-way split of an illiquid business actually does to any of them. He drafts exactly what she asked for — evenly split, correctly executed, delivered on time.</p>
+      <p>Eighteen months later, Ms. Vance dies. The estranged child's outright inheritance is gone within a year. The child running the business can't afford to buy out the other two, and the business is sold.</p>
+    </div>
+
+    <form id="form-2">
+      <fieldset>
+        <legend>Has Marcus violated Rule 1.1?</legend>
+        <div class="options">
+          <div class="option">
+            <input type="radio" name="r2" id="r2-a" value="a">
+            <label for="r2-a">Yes — competent estate planning meant raising options she didn't ask for</label>
+          </div>
+          <div class="option">
+            <input type="radio" name="r2" id="r2-b" value="b">
+            <label for="r2-b">No — he did exactly what a careful lawyer does with clear instructions</label>
+          </div>
+          <div class="option">
+            <input type="radio" name="r2" id="r2-c" value="c">
+            <label for="r2-c">Genuinely unclear, and I think that's the point</label>
+          </div>
+        </div>
+      </fieldset>
+      <div class="commit-row">
+        <button type="submit" class="commit" disabled>Commit</button>
+        <span class="committed-tag">Committed</span>
+      </div>
+    </form>
+
+    <div class="transition" id="transition-2">
+      <p>However the room split, notice what didn't change: Marcus's research was accurate, his execution flawless, his deadline met. Whatever's bothering you about his file, it isn't on the checklist Rule 1.1 hands you.</p>
+    </div>
+  </section>
+
+  <!-- ROUND 3 -->
+  <section class="round" id="round-3" data-round="3">
+    <div class="round-head">
+      <span class="round-num">3</span>
+      <span class="round-title">Two proceedings, one word</span>
+    </div>
+    <div class="facts">
+      <p>Two separate things happen next.</p>
+      <p>Ms. Vance's estranged child files a bar complaint against Marcus, alleging a Rule 1.1 violation.</p>
+      <p>Separately, the child who ran the business sues Marcus for legal malpractice. That case will turn on an expert witness — an estate planning attorney with thirty years in practice — who is prepared to testify that any reasonably competent estate planner handling a client with an operating business and this family structure would have raised trust and succession options, regardless of what the client initially asked for.</p>
+    </div>
+
+    <form id="form-3">
+      <fieldset>
+        <legend>What happens to the bar complaint?</legend>
+        <div class="options">
+          <div class="option">
+            <input type="radio" name="r3a" id="r3a-a" value="a">
+            <label for="r3a-a">Closed or dismissed — no discipline</label>
+          </div>
+          <div class="option">
+            <input type="radio" name="r3a" id="r3a-b" value="b">
+            <label for="r3a-b">A private, non-public sanction</label>
+          </div>
+          <div class="option">
+            <input type="radio" name="r3a" id="r3a-c" value="c">
+            <label for="r3a-c">Public discipline — suspension or worse</label>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>What happens to the malpractice suit?</legend>
+        <div class="options">
+          <div class="option">
+            <input type="radio" name="r3b" id="r3b-a" value="a">
+            <label for="r3b-a">Dismissed</label>
+          </div>
+          <div class="option">
+            <input type="radio" name="r3b" id="r3b-b" value="b">
+            <label for="r3b-b">Settles, or succeeds, for the plaintiff</label>
+          </div>
+          <div class="option">
+            <input type="radio" name="r3b" id="r3b-c" value="c">
+            <label for="r3b-c">Comes down entirely to the battle of experts</label>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="commit-row">
+        <button type="submit" class="commit" disabled>Commit</button>
+        <span class="committed-tag">Committed</span>
+      </div>
+    </form>
+  </section>
+
+  <!-- ROUND 4 -->
+  <section class="round" id="round-4" data-round="4">
+    <div class="round-head">
+      <span class="round-num">4</span>
+      <span class="round-title">What the two systems actually do</span>
+    </div>
+    <div class="debrief">
+      <p>Three things are true at once, and none of them depend on how this particular hypothetical turns out.</p>
+
+      <h3>Rule 1.1 is rarely charged alone.</h3>
+      <p>Commentators who track discipline patterns note that competence violations are typically prosecuted alongside Rule 1.3 (diligence) or Rule 1.4 (communication) — and usually only after a pattern of neglect, not a single episode of unambitious-but-correct work. <cite>See Sanctions for Incompetence and Neglect, discussing Model Rule 1.1's disciplinary use.</cite></p>
+
+      <h3>The two systems are answering different questions.</h3>
+      <p>Discipline exists to protect the public and the profession's reputation — it doesn't compensate Ms. Vance's children. Malpractice exists to compensate them, and it's decided on a different question: what would a reasonably careful attorney in Marcus's position have done, established almost entirely through dueling experts. That's exactly the mechanism that can reach Marcus's file even though no rule's text was broken.</p>
+
+      <h3>The gap is documented well outside Florida.</h3>
+      <p>Commentary on California's parallel competence rule observes plainly that lawyers get sued for malpractice constantly, while bar discipline specifically for incompetence is comparatively rare — the same structural asymmetry you just predicted your way into.</p>
+
+      <h3>Florida's own history bears it out.</h3>
+      <p>One of the state's more cited competence-adjacent cases, <em>Florida Bar v. Fuller</em>, 389 So. 2d 999 (Fla. 1980), suspended a lawyer for a month — but for failing to communicate with a client and failing to proceed with a matter as promised, not for the quality of any legal work product. That's where Florida discipline has tended to land: someone stopped doing the job. Not someone did an adequate, uninspired job.</p>
+    </div>
+
+    <div class="closing">
+      <p class="question">If the disciplinary apparatus is built to catch lawyers who stop — not lawyers who merely satisfice — what is Rule 1.1 actually promising the public? And if nothing in the bar's enforcement machinery pushes toward the ceiling, what does?</p>
+    </div>
+
+    <details class="instructor">
+      <summary>Instructor note</summary>
+      <div class="body">
+        <p>Round 2 is built to split the room, and it usually will along a real fault line: does competence include a duty to surface issues the client didn't ask about, or does client autonomy mean "simple will" is itself an instruction a lawyer has to respect? Both readings have real support — Comment 5's emphasis on "adequate preparation" cuts toward the first; the client's authority to define the scope of representation cuts toward the second. Don't resolve it. If a group tries to resolve it, ask them what Marcus should have done differently that Ms. Vance would have accepted, and watch the tension reappear.</p>
+        <p>Round 3's options are illustrative, not a doctrinal prediction key — the honest answer to both is "it depends on facts we haven't given you," which is itself worth surfacing if a group wants a clean answer.</p>
+      </div>
+    </details>
+  </section>
+
+</div>
+
+<script>
+  (function(){
+    var totalRounds = 4;
+
+    function setupRound(roundNum, formId, requiredGroups, transitionId){
+      var form = document.getElementById(formId);
+      if(!form) return;
+      var button = form.querySelector('button.commit');
+      var tag = form.querySelector('.committed-tag');
+
+      function checkComplete(){
+        var complete = requiredGroups.every(function(name){
+          return form.querySelector('input[name="' + name + '"]:checked');
+        });
+        button.disabled = !complete;
+      }
+
+      requiredGroups.forEach(function(name){
+        var inputs = form.querySelectorAll('input[name="' + name + '"]');
+        inputs.forEach(function(input){
+          input.addEventListener('change', checkComplete);
+        });
+      });
+
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        // lock all inputs
+        form.querySelectorAll('input').forEach(function(input){
+          input.disabled = true;
+        });
+        button.style.display = 'none';
+        tag.style.display = 'inline';
+
+        if(transitionId){
+          var t = document.getElementById(transitionId);
+          if(t) t.classList.add('shown');
+        }
+
+        var next = document.getElementById('round-' + (roundNum + 1));
+        if(next){
+          next.classList.add('revealed');
+          document.getElementById('progressText').textContent = 'Round ' + Math.min(roundNum + 1, totalRounds) + ' of ' + totalRounds;
+          setTimeout(function(){
+            next.scrollIntoView({behavior: 'smooth', block: 'start'});
+          }, 150);
+        }
+      });
+    }
+
+    setupRound(1, 'form-1', ['r1'], 'transition-1');
+    setupRound(2, 'form-2', ['r2'], 'transition-2');
+    setupRound(3, 'form-3', ['r3a', 'r3b'], null);
+  })();
+</script>
+
+</body>
+</html>
